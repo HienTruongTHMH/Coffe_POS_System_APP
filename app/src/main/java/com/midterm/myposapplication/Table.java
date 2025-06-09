@@ -3,7 +3,7 @@ package com.midterm.myposapplication;
 public class Table {
     private String number;
     private String name;
-    private String status; // "available", "occupied", "reserved"
+    private String status; // "available", "occupied", "preparing", "reserved"
     private int capacity;
     private long lastOrderTime;
 
@@ -37,5 +37,13 @@ public class Table {
 
     public boolean isOccupied() {
         return "occupied".equals(status);
+    }
+
+    public boolean isPreparing() {
+        return "preparing".equals(status);
+    }
+
+    public boolean isReserved() {
+        return "reserved".equals(status);
     }
 }
