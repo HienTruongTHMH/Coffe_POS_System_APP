@@ -1,20 +1,24 @@
 package com.midterm.myposapplication;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class DrinkAdapter extends RecyclerView.Adapter<DrinkAdapter.DrinkViewHolder> {
 
     private List<Drink> drinkList;
+    private OnDrinkClickListener listener;
 
-    public DrinkAdapter(List<Drink> drinkList) {
+    public DrinkAdapter(List<Drink> drinkList, OnDrinkClickListener listener) {
         this.drinkList = drinkList;
+        this.listener = listener;
     }
 
     @NonNull
@@ -31,23 +35,68 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkAdapter.DrinkViewHol
         holder.drinkPrice.setText(String.format("%.2f$", drink.getPrice()));
         holder.drinkImage.setImageResource(drink.getImageResId());
 
-        // Hiển thị tùy chọn size nếu có
+        // Reset size selection
+        holder.selectedSize = "S"; // Default size
+
+        // Show/hide size options
         if (drink.hasSizes()) {
             holder.sizeM.setVisibility(View.VISIBLE);
             holder.sizeL.setVisibility(View.VISIBLE);
+
+            // Set up size selection
+            setupSizeSelection(holder, drink);
         } else {
             holder.sizeM.setVisibility(View.GONE);
             holder.sizeL.setVisibility(View.GONE);
         }
 
-        // TODO: Xử lý sự kiện click cho nút thêm (add_button)
-        holder.addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Logic khi nhấn nút thêm thức uống
-                // Ví dụ: thêm vào giỏ hàng, hiển thị thông báo, v.v.
+        // Handle add button click
+        holder.addButton.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onAddDrinkClicked(drink, holder.selectedSize);
             }
         });
+    }
+
+    private void setupSizeSelection(DrinkViewHolder holder, Drink drink) {
+        // Default selection is S (already set in selectedSize)
+        updateSizeButtonAppearance(holder);
+
+        holder.sizeM.setOnClickListener(v -> {
+            holder.selectedSize = "M";
+            updateSizeButtonAppearance(holder);
+        });
+
+        holder.sizeL.setOnClickListener(v -> {
+            holder.selectedSize = "L";
+            updateSizeButtonAppearance(holder);
+        });
+    }
+
+    private void updateSizeButtonAppearance(DrinkViewHolder holder) {
+        // Reset all buttons
+        resetSizeButton(holder.sizeM);
+        resetSizeButton(holder.sizeL);
+
+        // Highlight selected button
+        switch (holder.selectedSize) {
+            case "M":
+                highlightSizeButton(holder.sizeM);
+                break;
+            case "L":
+                highlightSizeButton(holder.sizeL);
+                break;
+        }
+    }
+
+    private void resetSizeButton(TextView button) {
+        button.setBackgroundResource(R.drawable.rounded_background);
+        button.setTextColor(Color.BLACK);
+    }
+
+    private void highlightSizeButton(TextView button) {
+        button.setBackgroundColor(ContextCompat.getColor(button.getContext(), android.R.color.holo_orange_light));
+        button.setTextColor(Color.WHITE);
     }
 
     @Override
@@ -62,6 +111,7 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkAdapter.DrinkViewHol
         TextView sizeM;
         TextView sizeL;
         ImageView addButton;
+        String selectedSize = "S"; // Default size
 
         public DrinkViewHolder(@NonNull View itemView) {
             super(itemView);

@@ -1,12 +1,14 @@
-package com.midterm.myposapplication; // Thay đổi package name của bạn
+package com.midterm.myposapplication;
 
 public class Drink {
+    private String id;
     private String name;
     private double price;
-    private int imageResId; // Resource ID của ảnh
-    private boolean hasSizes; // Kiểm tra có tùy chọn size M, L hay không
+    private int imageResId;
+    private boolean hasSizes;
 
-    public Drink(String name, double price, int imageResId, boolean hasSizes) {
+    public Drink(String id, String name, double price, int imageResId, boolean hasSizes) {
+        this.id = id;
         this.name = name;
         this.price = price;
         this.imageResId = imageResId;
@@ -14,19 +16,16 @@ public class Drink {
     }
 
     // Getters
-    public String getName() {
-        return name;
-    }
+    public String getId() { return id; }
+    public String getName() { return name; }
+    public double getPrice() { return price; }
+    public int getImageResId() { return imageResId; }
+    public boolean hasSizes() { return hasSizes; }
 
-    public double getPrice() {
-        return price;
-    }
-
-    public int getImageResId() {
-        return imageResId;
-    }
-
-    public boolean hasSizes() {
-        return hasSizes;
-    }
+    // Setters
+    public void setId(String id) { this.id = id; }
+    public void setName(String name) { this.name = name; }
+    public void setPrice(double price) { this.price = price; }
+    public void setImageResId(int imageResId) { this.imageResId = imageResId; }
+    public void setHasSizes(boolean hasSizes) { this.hasSizes = hasSizes; }
 }
