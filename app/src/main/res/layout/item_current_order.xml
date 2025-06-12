@@ -3,86 +3,89 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="8dp"
+    android:padding="12dp"
     android:gravity="center_vertical"
     android:background="@color/background_card">
 
+    <!-- Item Image -->
     <ImageView
         android:id="@+id/item_image"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:src="@drawable/ic_profile_avatar"
-        android:layout_marginEnd="12dp" />
+        android:src="@drawable/placeholder_drink"
+        android:scaleType="centerCrop"
+        android:background="@drawable/circle_bg" />
 
+    <!-- Item Info -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:layout_marginStart="12dp">
 
         <TextView
             android:id="@+id/item_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cappuccino"
+            android:text="Espresso (M)"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:textColor="@android:color/black" />
+            android:textColor="@color/text_primary" />
 
         <TextView
-            android:id="@+id/item_size"
+            android:id="@+id/item_price"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Size M"
+            android:text="$3.50"
             android:textSize="12sp"
-            android:textColor="@android:color/darker_gray" />
-
+            android:textColor="@color/text_secondary" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/item_price"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="$3.00"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:textColor="@android:color/black"
-        android:layout_marginEnd="8dp" />
-
+    <!-- Quantity Controls -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
-        <ImageView
+        <ImageButton
             android:id="@+id/btn_minus"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:src="@drawable/ic_minus_primary"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:padding="4dp" />
+            android:background="@drawable/ic_minus"
+            android:scaleType="centerInside" />
 
         <TextView
             android:id="@+id/item_quantity"
-            android:layout_width="wrap_content"
+            android:layout_width="32dp"
             android:layout_height="wrap_content"
             android:text="1"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:minWidth="24dp"
+            android:textColor="@color/text_primary"
             android:gravity="center"
-            android:layout_marginHorizontal="8dp"
-            android:textColor="@color/text_primary" />
+            android:layout_marginHorizontal="8dp" />
 
-        <ImageView
+        <ImageButton
             android:id="@+id/btn_plus"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:src="@drawable/ic_plus_primary"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:padding="4dp" />
-
+            android:background="@drawable/ic_plus"
+            android:scaleType="centerInside" />
     </LinearLayout>
+
+    <!-- Total Price -->
+    <TextView
+        android:id="@+id/total_price"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="$3.50"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="@color/primary_brown"
+        android:layout_marginStart="12dp" />
 
 </LinearLayout>
