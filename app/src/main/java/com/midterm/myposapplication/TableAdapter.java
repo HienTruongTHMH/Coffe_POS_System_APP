@@ -1,9 +1,9 @@
 package com.midterm.myposapplication;
 
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
@@ -24,7 +24,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableViewHol
     @NonNull
     @Override
     public TableViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_table, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_table_card, parent, false);
         return new TableViewHolder(view);
     }
 
@@ -32,14 +32,29 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableViewHol
     public void onBindViewHolder(@NonNull TableViewHolder holder, int position) {
         Table table = tableList.get(position);
 
-        holder.tableName.setText(table.getName());
+        // Set table data
+        holder.tableNumber.setText(table.getNumber());
         holder.tableStatus.setText(getStatusText(table.getStatus()));
 
-        // Set card color based on status
-        setCardAppearance(holder, table.getStatus());
+        // Set styling based on status
+        setTableStyling(holder, table);
 
-        // Handle click event
-        holder.cardTable.setOnClickListener(v -> {
+        // Handle click event with animation
+        holder.cardView.setOnClickListener(v -> {
+            // Add click animation
+            v.animate()
+                .scaleX(0.95f)
+                .scaleY(0.95f)
+                .setDuration(100)
+                .withEndAction(() -> {
+                    v.animate()
+                        .scaleX(1.0f)
+                        .scaleY(1.0f)
+                        .setDuration(100)
+                        .start();
+                })
+                .start();
+
             if (listener != null) {
                 listener.onTableClick(table);
             }
@@ -52,6 +67,8 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableViewHol
                 return "Trống";
             case "occupied":
                 return "Có khách";
+            case "preparing":
+                return "Đang chuẩn bị";
             case "reserved":
                 return "Đặt trước";
             default:
@@ -59,42 +76,94 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableViewHol
         }
     }
 
-    private void setCardAppearance(TableViewHolder holder, String status) {
-        switch (status) {
+    private void setTableStyling(TableViewHolder holder, Table table) {
+        int statusColor;
+        int cardBackgroundColor;
+        boolean showOrderCount = false;
+        String orderCountText = "";
+
+        switch (table.getStatus()) {
             case "available":
-                holder.cardTable.setCardBackgroundColor(Color.parseColor("#E8F5E8"));
-                holder.tableStatus.setTextColor(Color.parseColor("#4CAF50"));
+                statusColor = R.color.status_available;
+                cardBackgroundColor = R.color.card_available;
                 break;
+                
             case "occupied":
-                holder.cardTable.setCardBackgroundColor(Color.parseColor("#FFEBEE"));
-                holder.tableStatus.setTextColor(Color.parseColor("#F44336"));
+                statusColor = R.color.status_occupied;
+                cardBackgroundColor = R.color.card_occupied;
+                showOrderCount = true;
+                orderCountText = "3";
                 break;
+                
+            case "preparing":
+                statusColor = R.color.status_preparing;
+                cardBackgroundColor = R.color.card_preparing;
+                showOrderCount = true;
+                orderCountText = "1";
+                break;
+                
             case "reserved":
-                holder.cardTable.setCardBackgroundColor(Color.parseColor("#FFF3E0"));
-                holder.tableStatus.setTextColor(Color.parseColor("#FF9800"));
+                statusColor = R.color.status_reserved;
+                cardBackgroundColor = R.color.card_reserved;
                 break;
+                
             default:
-                holder.cardTable.setCardBackgroundColor(Color.parseColor("#F5F5F5"));
-                holder.tableStatus.setTextColor(Color.parseColor("#757575"));
+                statusColor = R.color.status_default;
+                cardBackgroundColor = android.R.color.white;
                 break;
+        }
+
+        // Apply colors
+        try {
+            holder.statusIndicator.setBackgroundTintList(
+                ContextCompat.getColorStateList(holder.itemView.getContext(), statusColor)
+            );
+            
+            holder.cardView.setCardBackgroundColor(
+                ContextCompat.getColor(holder.itemView.getContext(), cardBackgroundColor)
+            );
+
+            // Show/hide order count
+            if (showOrderCount) {
+                holder.orderCount.setVisibility(View.VISIBLE);
+                holder.orderCount.setText(orderCountText);
+            } else {
+                holder.orderCount.setVisibility(View.GONE);
+            }
+
+        } catch (Exception e) {
+            // Fallback styling
+            holder.statusIndicator.setBackgroundTintList(
+                ContextCompat.getColorStateList(holder.itemView.getContext(), android.R.color.darker_gray)
+            );
+            holder.cardView.setCardBackgroundColor(
+                ContextCompat.getColor(holder.itemView.getContext(), android.R.color.white)
+            );
         }
     }
 
     @Override
     public int getItemCount() {
-        return tableList.size();
+        return tableList != null ? tableList.size() : 0;
     }
 
     public static class TableViewHolder extends RecyclerView.ViewHolder {
-        CardView cardTable;
-        TextView tableName;
+        CardView cardView;
+        ImageView tableIcon;
+        TextView tableNumber;
         TextView tableStatus;
+        TextView orderCount;
+        View statusIndicator;
 
         public TableViewHolder(@NonNull View itemView) {
             super(itemView);
-            cardTable = itemView.findViewById(R.id.card_table);
-            tableName = itemView.findViewById(R.id.tv_table_name);
-            tableStatus = itemView.findViewById(R.id.tv_table_status);
+            
+            cardView = (CardView) itemView;
+            tableIcon = itemView.findViewById(R.id.table_icon);
+            tableNumber = itemView.findViewById(R.id.table_number);
+            tableStatus = itemView.findViewById(R.id.table_status);
+            orderCount = itemView.findViewById(R.id.order_count);
+            statusIndicator = itemView.findViewById(R.id.status_indicator);
         }
     }
 }

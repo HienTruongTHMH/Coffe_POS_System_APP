@@ -1,5 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Basic Colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- Primary Theme - Coffee Shop -->
+    <color name="primary_brown">#8D6E63</color>
+    <color name="primary_light">#BCAAA4</color>
+    <color name="primary_dark">#5D4037</color>
+    
+    <!-- Status Colors -->
+    <color name="status_available">#4CAF50</color>    <!-- Green -->
+    <color name="status_occupied">#FF9800</color>     <!-- Orange -->
+    <color name="status_preparing">#2196F3</color>    <!-- Blue -->
+    <color name="status_reserved">#9C27B0</color>     <!-- Purple -->
+    <color name="status_default">#757575</color>      <!-- Gray -->
+    
+    <!-- Card Background Colors -->
+    <color name="card_available">#F8FFF8</color>      <!-- Light green tint -->
+    <color name="card_occupied">#FFF8F0</color>       <!-- Light orange tint -->
+    <color name="card_preparing">#F0F8FF</color>      <!-- Light blue tint -->
+    <color name="card_reserved">#F8F0FF</color>       <!-- Light purple tint -->
+    
+    <!-- Background Colors -->
+    <color name="background_main">#F5F5F0</color>
+    <color name="background_card">#FFFFFF</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#2C2C2C</color>
+    <color name="text_secondary">#666666</color>
+    <color name="text_hint">#BDBDBD</color>
+    
+    <!-- Accent Colors -->
+    <color name="accent_green">#4CAF50</color>
+    <color name="accent_orange">#FF9800</color>
+    <color name="accent_red">#F44336</color>
 </resources>

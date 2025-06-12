@@ -15,7 +15,12 @@ public class Table {
         this.lastOrderTime = System.currentTimeMillis();
     }
 
-    // Getters and Setters
+    // ✅ Thêm method này
+    public boolean isAvailable() {
+        return "available".equals(this.status);
+    }
+
+    // Existing getters and setters
     public String getNumber() { return number; }
     public void setNumber(String number) { this.number = number; }
 
@@ -30,10 +35,6 @@ public class Table {
 
     public long getLastOrderTime() { return lastOrderTime; }
     public void setLastOrderTime(long lastOrderTime) { this.lastOrderTime = lastOrderTime; }
-
-    public boolean isAvailable() {
-        return "available".equals(status);
-    }
 
     public boolean isOccupied() {
         return "occupied".equals(status);

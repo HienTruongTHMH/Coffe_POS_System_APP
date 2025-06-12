@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "My POS APPLICATION"
+rootProject.name = "Coffee Shop POS Application V1"
 include(":app")

@@ -21,7 +21,41 @@ public class Order {
         this.timestamp = System.currentTimeMillis();
     }
 
-    // Getters and Setters
+    // ✅ Thêm missing methods
+    public void addItem(OrderItem item) {
+        // Check if item already exists, update quantity
+        for (OrderItem existingItem : items) {
+            if (existingItem.getDrinkId().equals(item.getDrinkId()) &&
+                    existingItem.getSize().equals(item.getSize())) {
+                existingItem.setQuantity(existingItem.getQuantity() + item.getQuantity());
+                return;
+            }
+        }
+        // Add new item
+        items.add(item);
+    }
+
+    public void removeItem(OrderItem item) {
+        items.remove(item);
+    }
+
+    public int getTotalItems() {
+        int total = 0;
+        for (OrderItem item : items) {
+            total += item.getQuantity();
+        }
+        return total;
+    }
+
+    public double getTotalAmount() {
+        double total = 0.0;
+        for (OrderItem item : items) {
+            total += item.getTotalPrice();
+        }
+        return total;
+    }
+
+    // Existing getters and setters
     public String getOrderId() { return orderId; }
     public void setOrderId(String orderId) { this.orderId = orderId; }
 
@@ -39,37 +73,4 @@ public class Order {
 
     public long getTimestamp() { return timestamp; }
     public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
-
-    // Utility methods
-    public void addItem(OrderItem item) {
-        // Check if item already exists, if yes, increase quantity
-        for (OrderItem existingItem : items) {
-            if (existingItem.getDrinkId().equals(item.getDrinkId()) &&
-                    existingItem.getSize().equals(item.getSize())) {
-                existingItem.setQuantity(existingItem.getQuantity() + item.getQuantity());
-                return;
-            }
-        }
-        items.add(item);
-    }
-
-    public void removeItem(OrderItem item) {
-        items.remove(item);
-    }
-
-    public double getTotalAmount() {
-        double total = 0;
-        for (OrderItem item : items) {
-            total += item.getTotalPrice();
-        }
-        return total;
-    }
-
-    public int getTotalItems() {
-        int count = 0;
-        for (OrderItem item : items) {
-            count += item.getQuantity();
-        }
-        return count;
-    }
 }

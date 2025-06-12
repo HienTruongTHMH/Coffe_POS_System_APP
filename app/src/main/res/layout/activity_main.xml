@@ -8,6 +8,7 @@
     android:background="#F5F5F5"
     tools:context=".MainActivity">
 
+    <!-- Header Section -->
     <LinearLayout
         android:id="@+id/header_section"
         android:layout_width="0dp"
@@ -29,21 +30,17 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Xin chào, Nguyễn Văn A"
+                android:text="Order Menu"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:textColor="@android:color/black"/>
+                android:textColor="@android:color/black" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Nhân Viên"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp"
-                android:background="@drawable/rounded_chip_background" android:textColor="@android:color/black"
-                android:textSize="14sp"/>
+                android:text="Today"
+                android:textSize="14sp"
+                android:textColor="@android:color/darker_gray" />
         </LinearLayout>
 
         <EditText
@@ -51,15 +48,13 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_marginTop="16dp"
-            android:hint="Tìm kiếm đồ uống..."
+            android:hint="Search drinks..."
+            android:background="@drawable/search_background"
             android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:drawableStart="@android:drawable/ic_menu_search"
-            android:background="@drawable/search_bar_background" android:drawablePadding="8dp"
-            android:singleLine="true"/>
+            android:paddingEnd="16dp" />
     </LinearLayout>
 
-    <!-- activity_main.xml -->
+    <!-- Order Status Section -->
     <HorizontalScrollView
         android:id="@+id/order_status_section"
         android:layout_width="0dp"
@@ -73,79 +68,14 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
-            android:id="@+id/order_cards_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-
-            <!-- Example CardView (Reduced Height) -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="140dp"
-                android:layout_height="80dp"
-                android:layout_marginEnd="8dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:padding="8dp"
-                    android:gravity="center_horizontal"
-                    android:background="#FFF3E0">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Table 2"
-                        android:textStyle="bold"
-                        android:textColor="@android:color/black"
-                        android:textSize="14sp"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="3 items"
-                        android:gravity="center"
-                        android:layout_marginTop="2dp"
-                        android:textSize="12sp"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Total: $12.50"
-                        android:textColor="@android:color/black"
-                        android:textSize="12sp"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Add more CardViews as needed -->
-
-            <!-- CardView for Adding a New Order -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_marginStart="8dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:background="#E0E0E0">
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@android:drawable/ic_input_add"
-                        android:tint="@android:color/black"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Add Order"
-                        android:textColor="@android:color/black"
-                        android:textSize="12sp"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            <!-- Order status items will be added here -->
         </LinearLayout>
     </HorizontalScrollView>
 
+    <!-- Category Tabs -->
     <HorizontalScrollView
         android:id="@+id/category_tabs"
         android:layout_width="0dp"
@@ -162,40 +92,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Cà phê"
-                android:textColor="@android:color/black"
-                android:backgroundTint="#FFD180"
-                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
-                android:layout_marginEnd="8dp"
-                app:cornerRadius="20dp" />
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Trà"
-                android:textColor="@android:color/black"
-                android:backgroundTint="#E0E0E0"
-                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
-                android:layout_marginEnd="8dp"
-                app:cornerRadius="20dp" />
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Đồ uống khác"
-                android:textColor="@android:color/black"
-                android:backgroundTint="#E0E0E0"
-                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
-                android:layout_marginEnd="8dp"
-                app:cornerRadius="20dp" />
-
+            <!-- Category tabs will be added here -->
         </LinearLayout>
     </HorizontalScrollView>
 
+    <!-- ✅ FIX: Sử dụng full package name cho RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/drinks_recycler_view"
         android:layout_width="0dp"
@@ -208,16 +109,48 @@
         app:layout_constraintTop_toBottomOf="@id/category_tabs"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/bottom_navigation_bar"
+        app:layout_constraintBottom_toTopOf="@id/current_order_section"
         tools:listitem="@layout/item_drink" />
 
+    <!-- Current Order Section -->
+    <LinearLayout
+        android:id="@+id/current_order_section"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@android:color/white"
+        android:padding="16dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation_bar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+        
+        <TextView
+            android:id="@+id/current_table_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bàn 1 - 2 món"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="@android:color/black" />
+            
+        <!-- ✅ FIX: Sử dụng full package name cho RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/current_order_items"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
+    </LinearLayout>
+
+    <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation_bar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:background="@android:color/white"
-        app:menu="@menu/bottom_nav_menu" app:layout_constraintBottom_toBottomOf="parent"
+        app:menu="@menu/bottom_nav_menu"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

@@ -17,7 +17,12 @@ public class OrderItem {
         this.imageResId = imageResId;
     }
 
-    // Getters and Setters
+    // ✅ Thêm method này
+    public double getTotalPrice() {
+        return price * quantity;
+    }
+
+    // Existing getters and setters
     public String getDrinkId() { return drinkId; }
     public void setDrinkId(String drinkId) { this.drinkId = drinkId; }
 
@@ -35,8 +40,4 @@ public class OrderItem {
 
     public int getImageResId() { return imageResId; }
     public void setImageResId(int imageResId) { this.imageResId = imageResId; }
-
-    public double getTotalPrice() {
-        return price * quantity;
-    }
 }
