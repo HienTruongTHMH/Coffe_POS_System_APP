@@ -3,8 +3,10 @@ package com.midterm.myposapplication;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -13,17 +15,19 @@ import java.util.List;
 public class CurrentOrderAdapter extends RecyclerView.Adapter<CurrentOrderAdapter.CurrentOrderViewHolder> {
     
     private List<CurrentOrderItem> currentOrderItems;
+    private boolean showActionButtons = false; // ✅ Control button visibility
     
-    // ✅ Interface với tên và methods chính xác
-    public interface OnOrderItemClickListener {
+    // ✅ Enhanced interface với action buttons
+    public interface OnOrderItemChangeListener {
         void onQuantityChanged(CurrentOrderItem item, int newQuantity);
         void onItemRemoved(CurrentOrderItem item);
+        void onConfirmOrder(List<CurrentOrderItem> items); // ✅ New method
+        void onCancelOrder(); // ✅ New method
     }
     
-    private OnOrderItemClickListener listener;
+    private OnOrderItemChangeListener listener;
     
-    // ✅ Constructor
-    public CurrentOrderAdapter(List<CurrentOrderItem> currentOrderItems, OnOrderItemClickListener listener) {
+    public CurrentOrderAdapter(List<CurrentOrderItem> currentOrderItems, OnOrderItemChangeListener listener) {
         this.currentOrderItems = currentOrderItems;
         this.listener = listener;
     }
@@ -52,14 +56,13 @@ public class CurrentOrderAdapter extends RecyclerView.Adapter<CurrentOrderAdapte
             holder.itemImage.setImageResource(R.drawable.placeholder_drink);
         }
         
-        // Plus button
+        // Quantity controls
         holder.btnPlus.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onQuantityChanged(item, item.getQuantity() + 1);
             }
         });
         
-        // Minus button
         holder.btnMinus.setOnClickListener(v -> {
             if (listener != null) {
                 int newQuantity = item.getQuantity() - 1;
@@ -70,11 +73,38 @@ public class CurrentOrderAdapter extends RecyclerView.Adapter<CurrentOrderAdapte
                 }
             }
         });
+        
+        // ✅ Show action buttons only for last item when order has items
+        if (position == currentOrderItems.size() - 1 && currentOrderItems.size() > 0) {
+            holder.actionButtonsContainer.setVisibility(View.VISIBLE);
+            
+            // Cancel button
+            holder.btnCancelOrder.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onCancelOrder();
+                }
+            });
+            
+            // Confirm button
+            holder.btnConfirmOrder.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onConfirmOrder(currentOrderItems);
+                }
+            });
+        } else {
+            holder.actionButtonsContainer.setVisibility(View.GONE);
+        }
     }
     
     @Override
     public int getItemCount() {
         return currentOrderItems != null ? currentOrderItems.size() : 0;
+    }
+    
+    // ✅ Method to control button visibility
+    public void setShowActionButtons(boolean show) {
+        this.showActionButtons = show;
+        notifyDataSetChanged();
     }
     
     public static class CurrentOrderViewHolder extends RecyclerView.ViewHolder {
@@ -85,6 +115,9 @@ public class CurrentOrderAdapter extends RecyclerView.Adapter<CurrentOrderAdapte
         TextView totalPrice;
         ImageButton btnPlus;
         ImageButton btnMinus;
+        LinearLayout actionButtonsContainer; // ✅ New
+        Button btnCancelOrder; // ✅ New
+        Button btnConfirmOrder; // ✅ New
         
         public CurrentOrderViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -95,6 +128,11 @@ public class CurrentOrderAdapter extends RecyclerView.Adapter<CurrentOrderAdapte
             totalPrice = itemView.findViewById(R.id.total_price);
             btnPlus = itemView.findViewById(R.id.btn_plus);
             btnMinus = itemView.findViewById(R.id.btn_minus);
+            
+            // ✅ New action buttons
+            actionButtonsContainer = itemView.findViewById(R.id.action_buttons_container);
+            btnCancelOrder = itemView.findViewById(R.id.btn_cancel_order);
+            btnConfirmOrder = itemView.findViewById(R.id.btn_confirm_order);
         }
     }
 }
