@@ -18,7 +18,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity 
     implements DrinkAdapter.OnDrinkClickListener,
-               CurrentOrderAdapter.OnOrderItemClickListener, // ✅ Change to OnOrderItemClickListener
+               CurrentOrderAdapter.OnOrderItemChangeListener, // ✅ Change to OnOrderItemClickListener
                OrderStatusAdapter.OnOrderStatusClickListener {
 
     private static final String TAG = "MainActivity";
@@ -295,6 +295,67 @@ public class MainActivity extends AppCompatActivity
         } else {
             Toast.makeText(this, "Order " + orderStatus.getOrderNumber() + " details", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    // ✅ Add to MainActivity.java - new interface methods
+    @Override
+    public void onConfirmOrder(List<CurrentOrderItem> items) {
+        if (items.isEmpty()) {
+            Toast.makeText(this, "Không có món nào để xác nhận", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // Create Order from CurrentOrderItems
+        Order order = createOrderFromCurrentItems();
+        
+        // Generate order number
+        String orderNumber = "#" + (2100 + orderStatusList.size() + 1);
+        
+        // Create OrderStatus
+        OrderStatus newOrderStatus = new OrderStatus(
+            order.getOrderId(),
+            orderNumber,
+            selectedTableName,
+            "preparing", // Initial status
+            items.size()
+        );
+        
+        // Add to order status list
+        orderStatusList.add(newOrderStatus);
+        orderStatusAdapter.notifyDataSetChanged();
+        
+        // Clear current order
+        currentOrderItems.clear();
+        currentOrderAdapter.notifyDataSetChanged();
+        
+        // Reset table selection
+        selectedTableNumber = "";
+        selectedTableName = "";
+        updateCurrentOrderDisplay();
+        
+        // Show success message
+        Toast.makeText(this, "Đã xác nhận đơn hàng " + orderNumber, Toast.LENGTH_SHORT).show();
+        
+        Log.d(TAG, "Order confirmed: " + orderNumber + " with " + items.size() + " items");
+    }
+
+    @Override
+    public void onCancelOrder() {
+        if (currentOrderItems.isEmpty()) {
+            Toast.makeText(this, "Không có món nào để hủy", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // Clear current order
+        currentOrderItems.clear();
+        currentOrderAdapter.notifyDataSetChanged();
+        
+        // Reset table selection
+        selectedTableNumber = "";
+        selectedTableName = "";
+        updateCurrentOrderDisplay();
+        
+        Toast.makeText(this, "Đã hủy đơn hàng", Toast.LENGTH_SHORT).show();
     }
 
     private OrderItem convertToOrderItem(CurrentOrderItem currentItem) {
