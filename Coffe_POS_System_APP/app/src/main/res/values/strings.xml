@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">myposapplication</string>
+    <string name="welcome">WELCOME</string>
+    <string name="name_label">Name</string>
+    <string name="enter_username">Enter username</string>
+    <string name="password_label">Password</string>
+    <string name="enter_password">Enter password</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="dont_have_account_2">Dont have account yet?</string>
+    <string name="sign_up">Sign up →</string>
+    <string name="login_with">login with</string>
+    <string name="facebook_login">Facebook login</string>
+    <string name="gmail_login">Gmail login</string>
+    <string name="login_in">Login In</string>
+    <string name="verify_password_label">Verify Password</string>
+    <string name="enter_verify_password">Enter verify password</string>
+    <string name="confirm">Confirm</string>
+</resources>

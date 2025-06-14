@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F0">
+
+    <!-- Scrollable Content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/bottomNavigation"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Product Image Section -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:background="@color/primary_light">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/placeholder_drink"/>
+
+                <!-- Back Button -->
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="16dp"
+                    android:src="@drawable/ic_back"
+                    android:background="@drawable/circle_button"
+                    android:contentDescription="Back button" />
+            </RelativeLayout>
+
+            <!-- Product Details Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:background="@android:color/white">
+
+                <!-- Drink Name -->
+                <TextView
+                    android:id="@+id/drinkNameTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cappuccino"
+                    android:textSize="20sp"
+                    android:textColor="#333"
+                    android:textStyle="bold"/>
+
+                <!-- Drink Price -->
+                <TextView
+                    android:id="@+id/drinkPriceTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="$3.00"
+                    android:textSize="18sp"
+                    android:textColor="#333"
+                    android:layout_marginTop="4dp"/>
+
+                <!-- Quantity Selector -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="16dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Cappuccino"
+                        android:textSize="18sp"
+                        android:textColor="#333"
+                        android:textStyle="bold"/>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <!-- Decrease Button -->
+                        <ImageButton
+                            android:id="@+id/btnDecrease"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:background="@drawable/circle_button"
+                            android:contentDescription="Decrease quantity"
+                            android:scaleType="center"
+                            android:src="@drawable/ic_minus"/>
+
+                        <!-- Quantity Display -->
+                        <TextView
+                            android:id="@+id/tvQuantity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="1"
+                            android:textSize="16sp"
+                            android:textColor="#333"
+                            android:paddingLeft="16dp"
+                            android:paddingRight="16dp"/>
+
+                        <!-- Increase Button -->
+                        <ImageButton
+                            android:id="@+id/btnIncrease"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:background="@drawable/circle_button"
+                            android:contentDescription="Increase quantity"
+                            android:scaleType="center"
+                            android:src="@drawable/ic_plus"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Size Options -->
+                <TextView
+                    android:id="@+id/selectedSizeTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Size: Small"
+                    android:textSize="16sp"
+                    android:textColor="#333"
+                    android:layout_marginBottom="8dp"/>
+
+                <!-- Add to Cart Button -->
+                <ImageButton
+                    android:id="@+id/btnAddToCart"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ic_add_to_cart"
+                    android:contentDescription="Add to Cart"
+                    android:scaleType="centerCrop"/>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom Navigation -->
+    <LinearLayout
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:orientation="horizontal"
+        android:background="#FFFFFF"
+        android:elevation="8dp"
+        android:layout_alignParentBottom="true">
+        <!-- Bottom Navigation Items -->
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_order"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Order"/>
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>
