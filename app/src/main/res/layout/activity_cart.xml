@@ -1,10 +1,166 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Cart">
+    android:orientation="vertical"
+    android:background="@color/white">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical"
+        android:background="@color/primary_brown">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/placeholder_drink"
+            android:layout_marginEnd="12dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Order Management"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/white" />
+
+        <TextView
+            android:id="@+id/total_orders_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="12 Orders"
+            android:textSize="14sp"
+            android:textColor="@color/white"
+            android:background="@drawable/badge_background"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp" />
+
+    </LinearLayout>
+
+    <!-- Filter Tabs -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:background="@color/background_main">
+
+        <LinearLayout
+            android:id="@+id/filter_tabs_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/btn_all"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="All"
+                android:textSize="12sp"
+                android:background="@drawable/tab_rounded_selected"
+                android:textColor="@color/white"
+                android:layout_marginEnd="8dp"
+                android:paddingHorizontal="16dp"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/btn_preparing"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Đang làm"
+                android:textSize="12sp"
+                android:background="@drawable/tab_rounded_unselected"
+                android:textColor="@color/text_primary"
+                android:layout_marginEnd="8dp"
+                android:paddingHorizontal="16dp"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/btn_serving"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Đang phục vụ"
+                android:textSize="12sp"
+                android:background="@drawable/tab_rounded_unselected"
+                android:textColor="@color/text_primary"
+                android:layout_marginEnd="8dp"
+                android:paddingHorizontal="16dp"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/btn_waiting_payment"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Đang đợi thanh toán"
+                android:textSize="12sp"
+                android:background="@drawable/tab_rounded_unselected"
+                android:textColor="@color/text_primary"
+                android:layout_marginEnd="8dp"
+                android:paddingHorizontal="16dp"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/btn_paid"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Đã thanh toán"
+                android:textSize="12sp"
+                android:background="@drawable/tab_rounded_unselected"
+                android:textColor="@color/text_primary"
+                android:paddingHorizontal="16dp"
+                android:gravity="center" />
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- Orders List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/orders_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="16dp"
+        android:clipToPadding="false" />
+
+    <!-- Empty State -->
+    <LinearLayout
+        android:id="@+id/empty_state_layout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/placeholder_drink"
+            android:alpha="0.3" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Không có đơn hàng nào"
+            android:textSize="16sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="16dp" />
+
+    </LinearLayout>
+
+    <!-- Bottom Navigation -->
+    <!-- ✅ Fix: Sử dụng app: thay vì auto: -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        app:menu="@menu/bottom_nav_menu" />
+</LinearLayout>
