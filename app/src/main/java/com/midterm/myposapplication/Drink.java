@@ -4,9 +4,10 @@ public class Drink {
     private String id;
     private String name;
     private double price;
-    private int imageResId;
+    private int imageResId;        // ✅ imageResId
     private boolean hasSizes;
 
+    // Constructor: (id, name, price, imageResId, hasSizes)
     public Drink(String id, String name, double price, int imageResId, boolean hasSizes) {
         this.id = id;
         this.name = name;

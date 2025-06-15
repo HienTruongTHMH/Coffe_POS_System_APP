@@ -5,8 +5,8 @@ public class OrderItem {
     private String drinkName;
     private double price;
     private int quantity;
-    private String size; // "S", "M", "L"
-    private int imageResId;
+    private String size;
+    private int imageResId;        // ✅ imageResId (consistent with Drink)
 
     public OrderItem(String drinkId, String drinkName, double price, int quantity, String size, int imageResId) {
         this.drinkId = drinkId;

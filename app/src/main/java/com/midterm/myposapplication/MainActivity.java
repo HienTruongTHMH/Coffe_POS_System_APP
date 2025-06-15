@@ -119,32 +119,6 @@ public class MainActivity extends AppCompatActivity
         currentOrderRecyclerView.setAdapter(currentOrderAdapter);
     }
 
-    // private void setupCategoryTabs() {
-    //     String[] categories = {"All", "Coffee", "Tea", "Cold"};
-        
-    //     for (String category : categories) {
-    //         Button categoryButton = new Button(this);
-    //         categoryButton.setText(category);
-    //         categoryButton.setLayoutParams(new LinearLayout.LayoutParams(
-    //             ViewGroup.LayoutParams.WRAP_CONTENT,
-    //             ViewGroup.LayoutParams.WRAP_CONTENT
-    //         ));
-            
-    //         // Set initial selection
-    //         if (category.equals(currentCategory)) {
-    //             categoryButton.setSelected(true);
-    //         }
-            
-    //         categoryButton.setOnClickListener(v -> {
-    //             currentCategory = category;
-    //             filterDrinksByCategory(category);
-    //             updateCategoryTabSelection();
-    //         });
-            
-    //         categoryTabsContainer.addView(categoryButton);
-    //     }
-    // }
-
     // ✅ New method - Setup Order Status
     private void setupOrderStatus() {
         // Sample data
@@ -292,7 +266,7 @@ public class MainActivity extends AppCompatActivity
                 drink.getPrice(),
                 1,
                 "M",
-                drink.getImageResId() // ✅ Correct method name
+                drink.getImageResId() // ✅ Both methods now consistent
             ));
         }
         
