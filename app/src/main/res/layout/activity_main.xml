@@ -100,6 +100,68 @@
             tools:listitem="@layout/item_order_status" />
     </LinearLayout>
 
+    <!-- Status Filter Tabs (Style như ảnh) -->
+    <HorizontalScrollView
+        android:id="@+id/status_filter_tabs"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/order_status_container"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:id="@+id/status_filter_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="8dp">
+
+            <!-- Đang làm Tab -->
+            <TextView
+                android:id="@+id/tab_preparing"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="Đang làm"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:background="@drawable/tab_rounded_selected"
+                android:gravity="center"
+                android:paddingHorizontal="16dp"
+                android:layout_marginEnd="8dp" />
+
+            <!-- Sẵn sàng phục vụ Tab -->
+            <TextView
+                android:id="@+id/tab_ready"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="Sẵn sàng phục vụ"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:background="@drawable/tab_rounded_unselected"
+                android:gravity="center"
+                android:paddingHorizontal="16dp"
+                android:layout_marginEnd="8dp" />
+
+            <!-- Đang phục vụ Tab -->
+            <TextView
+                android:id="@+id/tab_serving"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="Đang phục vụ"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:background="@drawable/tab_rounded_unselected"
+                android:gravity="center"
+                android:paddingHorizontal="16dp" />
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
     <!-- Category Tabs -->
     <HorizontalScrollView
         android:id="@+id/category_tabs"
@@ -109,7 +171,7 @@
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:scrollbars="none"
-        app:layout_constraintTop_toBottomOf="@id/order_status_container"
+        app:layout_constraintTop_toBottomOf="@id/status_filter_tabs"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 

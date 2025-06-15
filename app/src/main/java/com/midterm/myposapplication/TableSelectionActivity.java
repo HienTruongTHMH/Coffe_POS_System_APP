@@ -21,15 +21,15 @@ public class TableSelectionActivity extends AppCompatActivity
     // UI Components
     private RecyclerView insideTablesRecycler;
     private RecyclerView outsideTablesRecycler;
-    private RecyclerView orderStatusRecycler; // ✅ New component
+    private RecyclerView orderStatusRecycler;
     private TableAdapter insideTableAdapter;
     private TableAdapter outsideTableAdapter;
-    private OrderStatusAdapter orderStatusAdapter; // ✅ New adapter
+    private OrderStatusAdapter orderStatusAdapter;
 
     // Data
     private List<Table> insideTables;
     private List<Table> outsideTables;
-    private List<OrderStatus> orderStatusList; // ✅ New data
+    private List<OrderStatus> orderStatusList;
 
     // Selected drink information
     private String selectedDrinkId;
@@ -45,12 +45,11 @@ public class TableSelectionActivity extends AppCompatActivity
 
         Log.d(TAG, "onCreate started");
 
-        // Initialize components
         initializeViews();
         getDrinkInformation();
         setupTableData();
         setupRecyclerViews();
-        setupOrderStatus(); // ✅ New setup
+        setupOrderStatus();
         setupBottomNavigation();
 
         Log.d(TAG, "onCreate completed");
@@ -59,7 +58,7 @@ public class TableSelectionActivity extends AppCompatActivity
     private void initializeViews() {
         insideTablesRecycler = findViewById(R.id.inside_tables_recycler);
         outsideTablesRecycler = findViewById(R.id.outside_tables_recycler);
-        orderStatusRecycler = findViewById(R.id.order_status_recycler); // ✅ New
+        orderStatusRecycler = findViewById(R.id.order_status_recycler);
 
         Log.d(TAG, "Views initialized - Inside: " + (insideTablesRecycler != null) + 
                    ", Outside: " + (outsideTablesRecycler != null) +
@@ -72,7 +71,7 @@ public class TableSelectionActivity extends AppCompatActivity
         selectedDrinkName = intent.getStringExtra("SELECTED_DRINK_NAME");
         selectedDrinkPrice = intent.getDoubleExtra("SELECTED_DRINK_PRICE", 0);
         selectedDrinkSize = intent.getStringExtra("SELECTED_DRINK_SIZE");
-        selectedDrinkImage = intent.getIntExtra("SELECTED_DRINK_IMAGE", R.drawable.ic_profile_avatar);
+        selectedDrinkImage = intent.getIntExtra("SELECTED_DRINK_IMAGE", R.drawable.placeholder_drink);
 
         Log.d(TAG, "Drink info - Name: " + selectedDrinkName + ", Price: " + selectedDrinkPrice);
     }
@@ -96,32 +95,26 @@ public class TableSelectionActivity extends AppCompatActivity
 
     private void setupRecyclerViews() {
         if (insideTablesRecycler != null && insideTables != null) {
-            // Inside tables
             insideTableAdapter = new TableAdapter(insideTables, this);
             insideTablesRecycler.setLayoutManager(new GridLayoutManager(this, 2));
             insideTablesRecycler.setAdapter(insideTableAdapter);
             Log.d(TAG, "Inside RecyclerView setup completed");
         } else {
-            Log.e(TAG, "Inside RecyclerView setup failed - RecyclerView: " + 
-                      (insideTablesRecycler != null) + ", Data: " + (insideTables != null));
+            Log.e(TAG, "Inside RecyclerView setup failed");
         }
 
         if (outsideTablesRecycler != null && outsideTables != null) {
-            // Outside tables
             outsideTableAdapter = new TableAdapter(outsideTables, this);
             outsideTablesRecycler.setLayoutManager(new GridLayoutManager(this, 2));
             outsideTablesRecycler.setAdapter(outsideTableAdapter);
             Log.d(TAG, "Outside RecyclerView setup completed");
         } else {
-            Log.e(TAG, "Outside RecyclerView setup failed - RecyclerView: " + 
-                      (outsideTablesRecycler != null) + ", Data: " + (outsideTables != null));
+            Log.e(TAG, "Outside RecyclerView setup failed");
         }
     }
 
-    // ✅ New method - Setup Order Status
     private void setupOrderStatus() {
         if (orderStatusRecycler != null) {
-            // Sample data - same as MainActivity
             orderStatusList = new ArrayList<>();
             orderStatusList.add(new OrderStatus("1", "#2100", "Inside, table 2", "ready", 3));
             orderStatusList.add(new OrderStatus("2", "#2101", "Outside, chair 1", "preparing", 2));
@@ -150,11 +143,20 @@ public class TableSelectionActivity extends AppCompatActivity
                     finish();
                     return true;
                 } else if (itemId == R.id.nav_list) {
+                    return true; // Already on this screen
+                } else if (itemId == R.id.nav_cart) {
+                    // ✅ Add Cart navigation
+                    Intent intent = new Intent(TableSelectionActivity.this, Cart.class);
+                    startActivity(intent);
                     return true;
-                } else {
-                    Toast.makeText(this, "Feature coming soon", Toast.LENGTH_SHORT).show();
+                } else if (itemId == R.id.nav_package) {
+                    Toast.makeText(this, "Package feature coming soon", Toast.LENGTH_SHORT).show();
+                    return true;
+                } else if (itemId == R.id.nav_profile) {
+                    Toast.makeText(this, "Profile feature coming soon", Toast.LENGTH_SHORT).show();
                     return true;
                 }
+                return false;
             });
         }
     }
@@ -170,16 +172,35 @@ public class TableSelectionActivity extends AppCompatActivity
         }
     }
 
-    // ✅ New method - Handle Order Status clicks
+    // ✅ Fix: Implement missing onOrderStatusDoubleClick method
     @Override
     public void onOrderStatusClick(OrderStatus orderStatus) {
         if ("ready".equals(orderStatus.getStatus())) {
-            // Mark as served
             orderStatus.setStatus("served");
             orderStatusAdapter.notifyDataSetChanged();
             Toast.makeText(this, "Order " + orderStatus.getOrderNumber() + " marked as served", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "Order " + orderStatus.getOrderNumber() + " details", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // ✅ Fix: Add missing onOrderStatusDoubleClick method
+    @Override
+    public void onOrderStatusDoubleClick(OrderStatus orderStatus) {
+        if ("ready".equals(orderStatus.getStatus())) {
+            // Change status to in_service on double click
+            orderStatus.setStatus("in_service");
+            orderStatusAdapter.notifyDataSetChanged();
+            Toast.makeText(this, "Order " + orderStatus.getOrderNumber() + " đang được phục vụ", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "Order " + orderStatus.getOrderNumber() + " status changed to in_service");
+        } else if ("preparing".equals(orderStatus.getStatus())) {
+            // Change status to ready on double click
+            orderStatus.setStatus("ready");
+            orderStatusAdapter.notifyDataSetChanged();
+            Toast.makeText(this, "Order " + orderStatus.getOrderNumber() + " sẵn sàng phục vụ", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "Order " + orderStatus.getOrderNumber() + " status changed to ready");
+        } else {
+            Toast.makeText(this, "Không thể thay đổi trạng thái order " + orderStatus.getOrderNumber(), Toast.LENGTH_SHORT).show();
         }
     }
 

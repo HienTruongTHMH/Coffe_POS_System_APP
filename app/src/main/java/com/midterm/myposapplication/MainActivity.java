@@ -47,6 +47,11 @@ public class MainActivity extends AppCompatActivity
     // private String currentCategory = "All";
     private String selectedTableNumber = "";
     private String selectedTableName = "";
+    private String currentStatusFilter = "preparing"; // Default filter
+
+    // UI Components for status filter
+    private LinearLayout statusFilterContainer;
+    private TextView tabPreparing, tabReady, tabServing;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,8 +61,8 @@ public class MainActivity extends AppCompatActivity
         initializeViews();
         setupDrinksData();
         setupRecyclerViews();
-        //setupCategoryTabs();
-        setupOrderStatus(); // ✅ New setup
+        setupStatusFilterTabs(); // ✅ Add this
+        setupOrderStatus();
         setupBottomNavigation();
         handleIntent();
     }
@@ -69,6 +74,10 @@ public class MainActivity extends AppCompatActivity
         // categoryTabsContainer = findViewById(R.id.category_tabs_container);
         currentOrderSection = findViewById(R.id.current_order_section);
         currentTableText = findViewById(R.id.current_table_text);
+        statusFilterContainer = findViewById(R.id.status_filter_container);
+        tabPreparing = findViewById(R.id.tab_preparing);
+        tabReady = findViewById(R.id.tab_ready);
+        tabServing = findViewById(R.id.tab_serving);
     }
 
     private void setupDrinksData() {
@@ -150,46 +159,92 @@ public class MainActivity extends AppCompatActivity
         orderStatusRecycler.setAdapter(orderStatusAdapter);
     }
 
-    // private void filterDrinksByCategory(String category) {
-    //     filteredDrinks.clear();
-        
-    //     if ("All".equals(category)) {
-    //         filteredDrinks.addAll(allDrinks);
-    //     } else {
-    //         for (Drink drink : allDrinks) {
-    //             if (category.equals(drink.getCategory())) {
-    //                 filteredDrinks.add(drink);
-    //             }
-    //         }
-    //     }
-        
-    //     drinkAdapter.notifyDataSetChanged();
-    // }
+    private void setupStatusFilterTabs() {
+        tabPreparing.setOnClickListener(v -> {
+            currentStatusFilter = "preparing";
+            updateStatusFilterSelection();
+            filterOrderStatusByType("preparing");
+        });
 
-    // private void updateCategoryTabSelection() {
-    //     for (int i = 0; i < categoryTabsContainer.getChildCount(); i++) {
-    //         Button button = (Button) categoryTabsContainer.getChildAt(i);
-    //         button.setSelected(button.getText().toString().equals(currentCategory));
-    //     }
-    // }
+        tabReady.setOnClickListener(v -> {
+            currentStatusFilter = "ready";
+            updateStatusFilterSelection();
+            filterOrderStatusByType("ready");
+        });
+
+        tabServing.setOnClickListener(v -> {
+            currentStatusFilter = "in_service";
+            updateStatusFilterSelection();
+            filterOrderStatusByType("in_service");
+        });
+    }
+
+    private void updateStatusFilterSelection() {
+        // Reset all tabs
+        resetTabStyle(tabPreparing);
+        resetTabStyle(tabReady);
+        resetTabStyle(tabServing);
+        
+        // Set selected tab
+        switch (currentStatusFilter) {
+            case "preparing":
+                setSelectedTabStyle(tabPreparing);
+                break;
+            case "ready":
+                setSelectedTabStyle(tabReady);
+                break;
+            case "in_service":
+                setSelectedTabStyle(tabServing);
+                break;
+        }
+    }
+
+    private void setSelectedTabStyle(TextView tab) {
+        tab.setBackground(getResources().getDrawable(R.drawable.tab_rounded_selected));
+        tab.setTextColor(getResources().getColor(R.color.white));
+    }
+
+    private void resetTabStyle(TextView tab) {
+        tab.setBackground(getResources().getDrawable(R.drawable.tab_rounded_unselected));
+        tab.setTextColor(getResources().getColor(R.color.text_secondary));
+    }
+
+    private void filterOrderStatusByType(String statusType) {
+        List<OrderStatus> filteredList = new ArrayList<>();
+        for (OrderStatus orderStatus : orderStatusList) {
+            if (statusType.equals(orderStatus.getStatus())) {
+                filteredList.add(orderStatus);
+            }
+        }
+        orderStatusAdapter.updateOrderStatus(filteredList);
+    }
 
     private void setupBottomNavigation() {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_bar);
         bottomNavigationView.setSelectedItemId(R.id.nav_order);
-        
+
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
-            
+
             if (itemId == R.id.nav_order) {
-                return true;
+                return true; // Already on this screen
             } else if (itemId == R.id.nav_list) {
                 Intent intent = new Intent(MainActivity.this, TableSelectionActivity.class);
                 startActivity(intent);
                 return true;
-            } else {
-                Toast.makeText(this, "Feature coming soon", Toast.LENGTH_SHORT).show();
+            } else if (itemId == R.id.nav_cart) {
+                // ✅ Add Cart navigation
+                Intent intent = new Intent(MainActivity.this, Cart.class);
+                startActivity(intent);
+                return true;
+            } else if (itemId == R.id.nav_package) {
+                Toast.makeText(this, "Package feature coming soon", Toast.LENGTH_SHORT).show();
+                return true;
+            } else if (itemId == R.id.nav_profile) {
+                Toast.makeText(this, "Profile feature coming soon", Toast.LENGTH_SHORT).show();
                 return true;
             }
+            return false;
         });
     }
 
@@ -412,6 +467,21 @@ public class MainActivity extends AppCompatActivity
             updateCurrentOrderDisplay();
             
             Log.d(TAG, "Table selected: " + selectedTableName);
+        }
+    }
+
+    // ✅ Add to OrderStatusClickListener implementation
+    @Override
+    public void onOrderStatusDoubleClick(OrderStatus orderStatus) {
+        if ("ready".equals(orderStatus.getStatus())) {
+            orderStatus.setStatus("in_service");
+            orderStatusAdapter.notifyDataSetChanged();
+            Toast.makeText(this, "Order " + orderStatus.getOrderNumber() + " đang được phục vụ", Toast.LENGTH_SHORT).show();
+            
+            // Update filter if currently viewing "ready" status
+            if ("ready".equals(currentStatusFilter)) {
+                filterOrderStatusByType("ready");
+            }
         }
     }
 }
