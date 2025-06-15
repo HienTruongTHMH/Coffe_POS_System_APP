@@ -6,16 +6,16 @@ public class CurrentOrderItem {
     private double price;
     private int quantity;
     private String size;
-    private int imageResourceId;
+    private int imageResId; // ✅ Changed to match Drink and OrderItem
 
-    // ✅ Constructor với 6 parameters
+    // ✅ Keep existing constructor signature but fix field name
     public CurrentOrderItem(String drinkId, String drinkName, double price, int quantity, String size, int imageResourceId) {
         this.drinkId = drinkId;
         this.drinkName = drinkName;
         this.price = price;
         this.quantity = quantity;
         this.size = size;
-        this.imageResourceId = imageResourceId;
+        this.imageResId = imageResourceId; // ✅ Map parameter to correct field
     }
 
     // Getters and Setters
@@ -34,8 +34,15 @@ public class CurrentOrderItem {
     public String getSize() { return size; }
     public void setSize(String size) { this.size = size; }
 
-    public int getImageResourceId() { return imageResourceId; }
-    public void setImageResourceId(int imageResourceId) { this.imageResourceId = imageResourceId; }
+    // ✅ Standardize method name to match Drink
+    public int getImageResId() { return imageResId; }
+    public void setImageResId(int imageResId) { this.imageResId = imageResId; }
+
+    // ✅ Keep backward compatibility method
+    @Deprecated
+    public int getImageResourceId() { return imageResId; }
+    @Deprecated
+    public void setImageResourceId(int imageResourceId) { this.imageResId = imageResourceId; }
 
     // Helper method
     public double getTotalPrice() {
