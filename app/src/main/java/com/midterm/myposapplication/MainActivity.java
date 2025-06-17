@@ -215,7 +215,11 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(this, "Package feature coming soon", Toast.LENGTH_SHORT).show();
                 return true;
             } else if (itemId == R.id.nav_profile) {
-                Toast.makeText(this, "Profile feature coming soon", Toast.LENGTH_SHORT).show();
+                 // TODO: Navigate to Profile/Settings screen
+                Intent intent = new Intent(MainActivity.this, Profile.class);
+                intent.putExtra("MODE", "TABLE_FIRST");
+                startActivity(intent);
+//                Toast.makeText(this, "Profile feature coming soon", Toast.LENGTH_SHORT).show();
                 return true;
             }
             return false;
