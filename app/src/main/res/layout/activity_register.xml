@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#CBB59F">
+
+    <!-- Welcome Text -->
+    <TextView
+        android:id="@+id/tvWelcome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/welcome"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="40dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Register Card -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardRegister"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="20dp"
+        app:cardCornerRadius="30dp"
+        app:cardBackgroundColor="#E9DDD0"
+        app:layout_constraintTop_toBottomOf="@id/tvWelcome"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- Username Input -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/name_label" />
+
+            <EditText
+                android:id="@+id/etRegUsername"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="@string/enter_username"
+                android:background="@android:drawable/edit_text"
+                android:padding="8dp"
+                android:inputType="textPersonName"
+                android:textColor="#000000"
+                android:autofillHints="username" />
+
+            <!-- Password Input -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/password_label" />
+
+            <EditText
+                android:id="@+id/etRegPassword"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="@string/enter_password"
+                android:background="@android:drawable/edit_text"
+                android:padding="8dp"
+                android:inputType="textPassword"
+                android:textColor="#000000"
+                android:autofillHints="password" />
+
+            <!-- Verify Password Input -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/verify_password_label" />
+
+            <EditText
+                android:id="@+id/etVerifyPassword"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="@string/enter_verify_password"
+                android:background="@android:drawable/edit_text"
+                android:padding="8dp"
+                android:inputType="textPassword"
+                android:textColor="#000000" />
+
+            <!-- Confirm Button -->
+            <Button
+                android:id="@+id/btnConfirmRegister"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="20dp"
+                android:text="@string/confirm"
+                android:background="#7B5E3C"
+                android:textColor="#FFFFFF" />
+
+            <!-- Social Media Login Options -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="20dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/login_with"
+                    android:layout_marginEnd="20dp" />
+
+                <ImageView
+                    android:id="@+id/btnFacebookRegister"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/ic_facebook"
+                    android:contentDescription="@string/facebook_login" />
+
+                <ImageView
+                    android:id="@+id/btnGmailRegister"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="10dp"
+                    android:src="@drawable/ic_gmail"
+                    android:contentDescription="@string/gmail_login" />
+            </LinearLayout>
+
+            <!-- Login Link -->
+            <TextView
+                android:id="@+id/tvLoginIn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/login_in"
+                android:textColor="#0000FF"
+                android:layout_gravity="end"
+                android:layout_marginTop="10dp" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
