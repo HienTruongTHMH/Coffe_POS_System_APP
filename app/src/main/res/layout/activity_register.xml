@@ -11,14 +11,14 @@
         android:id="@+id/tvWelcome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/welcome"
+        android:layout_marginTop="40dp"
+        android:text="Welcome, Let's create new account"
+        android:textColor="#000000"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:textColor="#000000"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="40dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Register Card -->
     <androidx.cardview.widget.CardView
@@ -43,52 +43,52 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/name_label" />
+                android:text="User name" />
 
             <EditText
                 android:id="@+id/etRegUsername"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:hint="@string/enter_username"
+                android:autofillHints="username"
                 android:background="@android:drawable/edit_text"
-                android:padding="8dp"
+                android:hint="enter username"
                 android:inputType="textPersonName"
-                android:textColor="#000000"
-                android:autofillHints="username" />
+                android:padding="8dp"
+                android:textColor="#000000" />
 
             <!-- Password Input -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="@string/password_label" />
+                android:text="Password" />
 
             <EditText
                 android:id="@+id/etRegPassword"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:hint="@string/enter_password"
+                android:autofillHints="password"
                 android:background="@android:drawable/edit_text"
-                android:padding="8dp"
+                android:hint="enter password"
                 android:inputType="textPassword"
-                android:textColor="#000000"
-                android:autofillHints="password" />
+                android:padding="8dp"
+                android:textColor="#000000" />
 
             <!-- Verify Password Input -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="@string/verify_password_label" />
+                android:text="Verify password label" />
 
             <EditText
                 android:id="@+id/etVerifyPassword"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:hint="@string/enter_verify_password"
                 android:background="@android:drawable/edit_text"
-                android:padding="8dp"
+                android:hint="enter password again"
                 android:inputType="textPassword"
+                android:padding="8dp"
                 android:textColor="#000000" />
 
             <!-- Confirm Button -->
@@ -97,8 +97,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginTop="20dp"
-                android:text="@string/confirm"
                 android:background="#7B5E3C"
+                android:text="Confirm"
                 android:textColor="#FFFFFF" />
 
             <!-- Social Media Login Options -->
@@ -112,23 +112,23 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/login_with"
-                    android:layout_marginEnd="20dp" />
+                    android:layout_marginEnd="20dp"
+                    android:text="Login with" />
 
                 <ImageView
                     android:id="@+id/btnFacebookRegister"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:src="@drawable/ic_facebook"
-                    android:contentDescription="@string/facebook_login" />
+                    android:contentDescription="Facebook"
+                    android:src="@drawable/ic_facebook" />
 
                 <ImageView
                     android:id="@+id/btnGmailRegister"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_marginStart="10dp"
-                    android:src="@drawable/ic_gmail"
-                    android:contentDescription="@string/gmail_login" />
+                    android:contentDescription="Gmail"
+                    android:src="@drawable/ic_gmail" />
             </LinearLayout>
 
             <!-- Login Link -->
@@ -136,10 +136,10 @@
                 android:id="@+id/tvLoginIn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/login_in"
-                android:textColor="#0000FF"
                 android:layout_gravity="end"
-                android:layout_marginTop="10dp" />
+                android:layout_marginTop="10dp"
+                android:text="Login in"
+                android:textColor="#0000FF" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
