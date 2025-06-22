@@ -8,55 +8,82 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
-public class OrderManagementAdapter extends RecyclerView.Adapter<OrderManagementAdapter.OrderCardViewHolder> {
+public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHolder> {
     
-    private List<OrderManagement> orderList;
-    private OnOrderCardClickListener listener;
+    private List<Order> orderList;
+    private OnOrderClickListener listener;
     
-    public interface OnOrderCardClickListener {
-        void onOrderCardClick(OrderManagement order);
-        void onOrderStatusUpdate(OrderManagement order, String newStatus);
+    public interface OnOrderClickListener {
+        void onOrderClick(Order order);
+        void onOrderStatusUpdate(Order order, Order.OrderStatus newStatus);
+        void onPaymentStatusUpdate(Order order, Order.PaymentStatus newStatus);
     }
     
-    public OrderManagementAdapter(List<OrderManagement> orderList, OnOrderCardClickListener listener) {
+    public OrderAdapter(List<Order> orderList, OnOrderClickListener listener) {
         this.orderList = orderList;
         this.listener = listener;
     }
     
     @NonNull
     @Override
-    public OrderCardViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public OrderViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_order_card, parent, false);
-        return new OrderCardViewHolder(view);
+        return new OrderViewHolder(view);
     }
     
     @Override
-    public void onBindViewHolder(@NonNull OrderCardViewHolder holder, int position) {
-        OrderManagement order = orderList.get(position);
+    public void onBindViewHolder(@NonNull OrderViewHolder holder, int position) {
+        Order order = orderList.get(position);
         
         // Set basic info
         holder.orderId.setText(order.getOrderNumber());
-        holder.orderDateTime.setText(order.getDateTime());
-        holder.orderEmployee.setText(order.getEmployee());
+        holder.orderDateTime.setText(order.getFormattedDateTime());
+        holder.orderEmployee.setText(order.getEmployeeName());
         holder.tableInfo.setText(order.getTableInfo());
-        
-        // ✅ Set amount with item count
         holder.orderAmount.setText(order.getFormattedAmountWithItems());
         
         // Set order status
-        holder.orderStatus.setText(order.getOrderStatusDisplayName());
+        holder.orderStatus.setText(order.getOrderStatus().getDisplayName());
         holder.orderStatus.setBackground(getStatusBackground(holder.itemView.getContext(), order.getOrderStatus()));
         
         // Set payment status
-        holder.paymentStatus.setText(order.getPaymentStatusDisplayName());
+        holder.paymentStatus.setText(order.getPaymentStatus().getDisplayName());
         holder.paymentStatus.setBackground(getPaymentStatusBackground(holder.itemView.getContext(), order.getPaymentStatus()));
         
         // Click listener
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
-                listener.onOrderCardClick(order);
+                listener.onOrderClick(order);
             }
         });
+    }
+    
+    private android.graphics.drawable.Drawable getStatusBackground(android.content.Context context, Order.OrderStatus status) {
+        switch (status) {
+            case PREPARING:
+                return context.getResources().getDrawable(R.drawable.status_preparing_background);
+            case READY:
+                return context.getResources().getDrawable(R.drawable.status_badge_ready);
+            case SERVING:
+                return context.getResources().getDrawable(R.drawable.status_serving_background);
+            case COMPLETED:
+                return context.getResources().getDrawable(R.drawable.status_complete_background);
+            default:
+                return context.getResources().getDrawable(R.drawable.status_preparing_background);
+        }
+    }
+    
+    private android.graphics.drawable.Drawable getPaymentStatusBackground(android.content.Context context, Order.PaymentStatus status) {
+        switch (status) {
+            case PENDING:
+                return context.getResources().getDrawable(R.drawable.status_pending_background);
+            case PROCESSING:
+                return context.getResources().getDrawable(R.drawable.status_preparing_background);
+            case PAID:
+                return context.getResources().getDrawable(R.drawable.status_paid_background);
+            default:
+                return context.getResources().getDrawable(R.drawable.status_pending_background);
+        }
     }
     
     @Override
@@ -64,44 +91,16 @@ public class OrderManagementAdapter extends RecyclerView.Adapter<OrderManagement
         return orderList != null ? orderList.size() : 0;
     }
     
-    private android.graphics.drawable.Drawable getStatusBackground(android.content.Context context, String status) {
-        switch (status) {
-            case "preparing":
-                return context.getResources().getDrawable(R.drawable.status_preparing_background);
-            case "serving":
-                return context.getResources().getDrawable(R.drawable.status_serving_background);
-            case "waiting_payment":
-                return context.getResources().getDrawable(R.drawable.status_pending_background);
-            case "paid":
-                return context.getResources().getDrawable(R.drawable.status_complete_background);
-            default:
-                return context.getResources().getDrawable(R.drawable.status_pending_background);
-        }
-    }
-    
-    private android.graphics.drawable.Drawable getPaymentStatusBackground(android.content.Context context, String paymentStatus) {
-        switch (paymentStatus) {
-            case "pending":
-                return context.getResources().getDrawable(R.drawable.status_pending_background);
-            case "processing":
-                return context.getResources().getDrawable(R.drawable.status_preparing_background);
-            case "paid":
-                return context.getResources().getDrawable(R.drawable.status_paid_background);
-            default:
-                return context.getResources().getDrawable(R.drawable.status_pending_background);
-        }
-    }
-    
-    public void updateOrders(List<OrderManagement> newOrders) {
+    public void updateOrders(List<Order> newOrders) {
         this.orderList = newOrders;
         notifyDataSetChanged();
     }
     
-    public static class OrderCardViewHolder extends RecyclerView.ViewHolder {
+    public static class OrderViewHolder extends RecyclerView.ViewHolder {
         TextView orderId, orderAmount, orderDateTime, orderEmployee;
         TextView orderStatus, paymentStatus, tableInfo;
         
-        public OrderCardViewHolder(@NonNull View itemView) {
+        public OrderViewHolder(@NonNull View itemView) {
             super(itemView);
             orderId = itemView.findViewById(R.id.order_id);
             orderAmount = itemView.findViewById(R.id.order_amount);

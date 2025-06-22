@@ -3,41 +3,43 @@ package com.midterm.myposapplication;
 public class OrderItem {
     private String drinkId;
     private String drinkName;
-    private double price;
+    private double unitPrice;
     private int quantity;
     private String size;
-    private int imageResId;        // ✅ imageResId (consistent with Drink)
-
-    public OrderItem(String drinkId, String drinkName, double price, int quantity, String size, int imageResId) {
+    private int imageResId;
+    
+    public OrderItem(String drinkId, String drinkName, double unitPrice, int quantity, String size, int imageResId) {
         this.drinkId = drinkId;
         this.drinkName = drinkName;
-        this.price = price;
+        this.unitPrice = unitPrice;
         this.quantity = quantity;
         this.size = size;
         this.imageResId = imageResId;
     }
-
-    // ✅ Thêm method này
+    
+    // Calculations
     public double getTotalPrice() {
-        return price * quantity;
+        return unitPrice * quantity;
     }
-
-    // Existing getters and setters
+    
+    public String getFormattedUnitPrice() {
+        return String.format("$ %.2f", unitPrice);
+    }
+    
+    public String getFormattedTotalPrice() {
+        return String.format("$ %.2f", getTotalPrice());
+    }
+    
+    public String getDisplayName() {
+        return drinkName + " (" + size + ")";
+    }
+    
+    // Getters and Setters
     public String getDrinkId() { return drinkId; }
-    public void setDrinkId(String drinkId) { this.drinkId = drinkId; }
-
     public String getDrinkName() { return drinkName; }
-    public void setDrinkName(String drinkName) { this.drinkName = drinkName; }
-
-    public double getPrice() { return price; }
-    public void setPrice(double price) { this.price = price; }
-
+    public double getUnitPrice() { return unitPrice; }
     public int getQuantity() { return quantity; }
     public void setQuantity(int quantity) { this.quantity = quantity; }
-
     public String getSize() { return size; }
-    public void setSize(String size) { this.size = size; }
-
     public int getImageResId() { return imageResId; }
-    public void setImageResId(int imageResId) { this.imageResId = imageResId; }
 }

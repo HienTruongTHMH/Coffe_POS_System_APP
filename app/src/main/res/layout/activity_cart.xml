@@ -95,6 +95,18 @@
                 android:gravity="center" />
 
             <TextView
+                android:id="@+id/btn_completed"  <!-- ✅ THÊM: Button "Hoàn thành" -->
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Hoàn thành"
+                android:textSize="12sp"
+                android:background="@drawable/tab_rounded_unselected"
+                android:textColor="@color/text_primary"
+                android:layout_marginEnd="8dp"
+                android:paddingHorizontal="16dp"
+                android:gravity="center" />
+
+            <TextView
                 android:id="@+id/btn_waiting_payment"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
