@@ -212,23 +212,37 @@ public class Local_Database_Staff {
         return filtered;
     }
     
-    // ✅ Add/Update methods
-    public String addNewOrder(Order order) {
-        orderCounter++;
-        String orderNumber = "#" + orderCounter;
-        orders.add(order);
-        
-        // Update table status to preparing
-        updateTableStatus(order.getTableNumber(), "preparing");
-        
-        return orderNumber;
+    // ✅ Add method to get orders by table number
+    public List<Order> getOrdersByTableNumber(String tableNumber) {
+        List<Order> tableOrders = new ArrayList<>();
+        for (Order order : orders) {
+            if (order.getTableNumber().equals(tableNumber)) {
+                tableOrders.add(order);
+            }
+        }
+        return tableOrders;
     }
     
+    // ✅ Add method to update table status 
     public void updateTableStatus(String tableNumber, String newStatus) {
         Table table = getTableByNumber(tableNumber);
         if (table != null) {
             table.setStatus(newStatus);
+            android.util.Log.d("TableStatus", "Updated table " + tableNumber + " to " + newStatus);
         }
+    }
+    
+    // ✅ Fix addNewOrder method to update table status
+    public String addNewOrder(Order order) {
+        orderCounter++;
+        String orderNumber = "#" + orderCounter;
+        order.setOrderNumber(orderNumber);
+        orders.add(order);
+        
+        // ✅ Update table status to occupied when order is added
+        updateTableStatus(order.getTableNumber(), "occupied");
+        
+        return orderNumber;
     }
     
     public void removeOrder(String tableNumber) {
