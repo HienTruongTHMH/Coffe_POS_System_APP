@@ -54,13 +54,35 @@
                 android:gravity="center_horizontal"
                 android:padding="24dp">
 
-                <ImageView
-                    android:id="@+id/imgAvatar"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:src="@drawable/ic_profile_avatar"
-                    android:scaleType="centerCrop"
-                    android:background="@drawable/circle_bg"/>
+                <!-- Avatar Container with Edit Button -->
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:id="@+id/imgAvatar"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:src="@drawable/ic_profile_avatar"
+                        android:scaleType="centerCrop"
+                        android:background="@drawable/circle_bg"
+                        android:clickable="true"
+                        android:focusable="true"/>
+
+                    <!-- Edit Avatar Button -->
+                    <ImageView
+                        android:id="@+id/btnEditAvatar"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_camera"
+                        android:background="@drawable/circle_bg_accent"
+                        android:layout_alignBottom="@id/imgAvatar"
+                        android:layout_alignRight="@id/imgAvatar"
+                        android:layout_marginRight="-8dp"
+                        android:layout_marginBottom="-8dp"
+                        android:padding="6dp"
+                        android:contentDescription="Edit avatar"/>
+                </RelativeLayout>
 
                 <TextView
                     android:id="@+id/tvName"
@@ -400,6 +422,7 @@
 
         <!-- profile -->
         <LinearLayout
+            android:id="@+id/navProfile"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
