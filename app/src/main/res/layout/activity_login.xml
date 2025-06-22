@@ -64,7 +64,7 @@
                 android:layout_height="48dp"
                 android:autofillHints="username"
                 android:background="@android:drawable/edit_text"
-                android:hint="enter_username"
+                android:hint="enter username"
                 android:inputType="textPersonName"
                 android:padding="8dp"
                 android:textColor="#000000" />
@@ -93,7 +93,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="forgot password"
+                android:text="Forgot password"
                 android:textColor="#0000FF" />
 
             <!-- Don't Have Account Link -->
@@ -108,7 +108,7 @@
                     android:id="@+id/tvDontHaveAccount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="dont have account" />
+                    android:text="Don't have account ?" />
 
                 <TextView
                     android:id="@+id/tvSignUp"
@@ -125,8 +125,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginTop="20dp"
-                android:text="Đăng nhập"
                 android:background="#7B5E3C"
+                android:text="Sign in"
                 android:textColor="#FFFFFF" />
 
             <!-- Login With Social Media -->
