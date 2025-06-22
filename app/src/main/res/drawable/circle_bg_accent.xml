@@ -1,12 +1,5 @@
-<<<<<<< HEAD
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
     <solid android:color="#D2691E"/>
     <size android:width="28dp" android:height="28dp"/>
-=======
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="oval">
-    <solid android:color="#D2691E"/>
-    <size android:width="28dp" android:height="28dp"/>
->>>>>>> main
 </shape>
