@@ -30,6 +30,8 @@
     <color name="status_occupied">#FF9800</color>
     <color name="status_preparing">#2196F3</color>
     <color name="status_reserved">#9C27B0</color>
+    <color name="status_serving">#FFA726</color> <!-- Orange for serving/occupied -->
+    <color name="status_completed">#78909C</color> <!-- Grey for completed -->
     <color name="status_default">#757575</color>
     
     <!-- Card Background Colors -->
@@ -46,6 +48,7 @@
     <color name="text_primary">#2C2C2C</color>
     <color name="text_secondary">#666666</color>
     <color name="text_hint">#BDBDBD</color>
+
     
     <!-- Accent Colors -->
     <color name="accent_green">#4CAF50</color>

@@ -30,8 +30,8 @@
             <ImageView
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:src="@drawable/placeholder_drink"
-                android:tint="@color/primary_brown"
+                android:src="@drawable/ic_coffee_row"
+                app:tint="@color/primary_brown"
                 android:layout_marginEnd="12dp" />
 
             <TextView
@@ -42,16 +42,6 @@
                 android:textSize="24sp"
                 android:textStyle="bold"
                 android:textColor="@color/text_primary" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Today"
-                android:textSize="14sp"
-                android:textColor="@color/text_secondary"
-                android:background="@drawable/status_background"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="4dp" />
         </LinearLayout>
 
         <EditText
@@ -69,47 +59,27 @@
             android:textColorHint="@color/text_hint" />
     </LinearLayout>
 
-    <!-- ✅ Order Status Section -->
-    <LinearLayout
-        android:id="@+id/order_status_container"
-        android:layout_width="0dp"
+    <!-- Order Status Section -->
+    <TextView
+        android:id="@+id/order_status_title"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:text="Active Orders"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_primary"
         android:layout_marginTop="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginStart="20dp"
         app:layout_constraintTop_toBottomOf="@id/header_section"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintStart_toStartOf="parent"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Order Status"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_primary"
-            android:layout_marginBottom="8dp" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/order_status_recycler"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/item_order_status" />
-    </LinearLayout>
-
-    <!-- Status Filter Tabs (Style như ảnh) -->
     <HorizontalScrollView
         android:id="@+id/status_filter_tabs"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
         android:scrollbars="none"
-        app:layout_constraintTop_toBottomOf="@id/order_status_container"
+        app:layout_constraintTop_toBottomOf="@id/order_status_title"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -118,89 +88,60 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:paddingVertical="8dp">
+            android:paddingHorizontal="20dp">
 
-            <!-- Đang làm Tab -->
+            <TextView
+                android:id="@+id/tab_all"
+                style="@style/FilterTab.Selected"
+                android:text="All" />
+
             <TextView
                 android:id="@+id/tab_preparing"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:text="Đang làm"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:textColor="@color/white"
-                android:background="@drawable/tab_rounded_selected"
-                android:gravity="center"
-                android:paddingHorizontal="16dp"
-                android:layout_marginEnd="8dp" />
+                style="@style/FilterTab.Unselected"
+                android:text="Preparing" />
 
-            <!-- Sẵn sàng phục vụ Tab -->
             <TextView
                 android:id="@+id/tab_ready"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:text="Sẵn sàng phục vụ"
-                android:textSize="12sp"
-                android:textColor="@color/text_secondary"
-                android:background="@drawable/tab_rounded_unselected"
-                android:gravity="center"
-                android:paddingHorizontal="16dp"
-                android:layout_marginEnd="8dp" />
+                style="@style/FilterTab.Unselected"
+                android:text="Ready" />
 
-            <!-- Đang phục vụ Tab -->
             <TextView
                 android:id="@+id/tab_serving"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:text="Đang phục vụ"
-                android:textSize="12sp"
-                android:textColor="@color/text_secondary"
-                android:background="@drawable/tab_rounded_unselected"
-                android:gravity="center"
-                android:paddingHorizontal="16dp" />
-
+                style="@style/FilterTab.Unselected"
+                android:text="Serving" />
         </LinearLayout>
     </HorizontalScrollView>
 
-    <!-- Category Tabs -->
-    <HorizontalScrollView
-        android:id="@+id/category_tabs"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/order_status_recycler"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:scrollbars="none"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp"
+        android:paddingHorizontal="20dp"
+        android:clipToPadding="false"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintTop_toBottomOf="@id/status_filter_tabs"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:listitem="@layout/item_order_status" />
 
-        <LinearLayout
-            android:id="@+id/category_tabs_container"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <!-- Category tabs will be added programmatically -->
-        </LinearLayout>
-    </HorizontalScrollView>
-
-    <!-- Drinks RecyclerView -->
+    <!-- Main Content: Drinks -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/drinks_recycler_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
+        android:paddingHorizontal="12dp"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:spanCount="2"
-        app:layout_constraintTop_toBottomOf="@id/category_tabs"
+        app:layout_constraintTop_toBottomOf="@id/order_status_recycler"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/current_order_section"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation_bar"
         tools:listitem="@layout/item_drink" />
 
-    <!-- Current Order Section -->
+    <!-- Current Order Section (Hidden by default) -->
     <LinearLayout
         android:id="@+id/current_order_section"
         android:layout_width="0dp"
@@ -212,13 +153,14 @@
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/bottom_navigation_bar"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:visibility="visible">
         
         <TextView
             android:id="@+id/current_table_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Bàn 1 - 2 món"
+            android:text="Table 1 - 2 items"
             android:textStyle="bold"
             android:textSize="16sp"
             android:textColor="@color/text_primary" />

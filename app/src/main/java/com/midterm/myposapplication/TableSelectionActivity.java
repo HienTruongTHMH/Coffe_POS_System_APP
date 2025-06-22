@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -14,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TableSelectionActivity extends AppCompatActivity 
-    implements OnTableClickListener, OrderAdapter.OnOrderClickListener, OrderDataManager.OrderDataListener {
+    implements OnTableClickListener, OrderStatusAdapter.OnOrderClickListener, OrderDataManager.OrderDataListener {
 
     private static final String TAG = "TableSelectionActivity";
 
@@ -22,9 +23,15 @@ public class TableSelectionActivity extends AppCompatActivity
     private RecyclerView insideTablesRecycler;
     private RecyclerView outsideTablesRecycler;
     private RecyclerView orderStatusRecycler;
+    
+    // ✅ Add filter tab TextViews
+    private TextView tabAll, tabPreparing, tabReady, tabServing;
+    private String currentStatusFilter = "all"; // ✅ Default to "all"
+    
+    // Adapters
     private TableAdapter insideTableAdapter;
     private TableAdapter outsideTableAdapter;
-    private OrderAdapter orderAdapter;
+    private OrderStatusAdapter orderStatusAdapter;
 
     // Data
     private List<Table> insideTables;
@@ -38,7 +45,7 @@ public class TableSelectionActivity extends AppCompatActivity
     private String selectedDrinkSize;
     private int selectedDrinkImage;
 
-    // ✅ Data Manager
+    // Data Manager
     private OrderDataManager orderDataManager;
 
     @Override
@@ -46,7 +53,7 @@ public class TableSelectionActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.order_table_screen);
 
-        // ✅ Initialize data manager and register listener
+        // Initialize data manager and register listener
         orderDataManager = OrderDataManager.getInstance();
         orderDataManager.addListener(this);
 
@@ -54,6 +61,7 @@ public class TableSelectionActivity extends AppCompatActivity
         getDrinkInformation();
         setupTableData();
         setupRecyclerViews();
+        setupStatusFilterTabs(); // ✅ Add this method
         setupOrderStatus();
         setupBottomNavigation();
     }
@@ -61,7 +69,6 @@ public class TableSelectionActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // ✅ Unregister listener
         if (orderDataManager != null) {
             orderDataManager.removeListener(this);
         }
@@ -71,16 +78,23 @@ public class TableSelectionActivity extends AppCompatActivity
     @Override
     public void onOrdersUpdated(List<Order> orders) {
         ordersList = orders;
-        if (orderAdapter != null) {
-            orderAdapter.updateOrders(orders);
+        if (orderStatusAdapter != null) {
+            orderStatusAdapter.updateOrders(orders);
         }
+        refreshTableAdapters();
     }
 
     @Override
     public void onOrderStatusChanged(Order order) {
-        if (orderAdapter != null) {
-            orderAdapter.notifyDataSetChanged();
+        if (orderStatusAdapter != null) {
+            int index = ordersList.indexOf(order);
+            if (index != -1) {
+                orderStatusAdapter.notifyItemChanged(index);
+            } else {
+                orderStatusAdapter.notifyDataSetChanged();
+            }
         }
+        refreshTableAdapters();
     }
 
     @Override
@@ -93,10 +107,31 @@ public class TableSelectionActivity extends AppCompatActivity
         // Handle order removal if needed
     }
 
+    private void refreshTableAdapters() {
+        if (insideTableAdapter != null) {
+            insideTableAdapter.notifyDataSetChanged();
+        }
+        if (outsideTableAdapter != null) {
+            outsideTableAdapter.notifyDataSetChanged();
+        }
+    }
+
     private void initializeViews() {
         insideTablesRecycler = findViewById(R.id.inside_tables_recycler);
         outsideTablesRecycler = findViewById(R.id.outside_tables_recycler);
         orderStatusRecycler = findViewById(R.id.order_status_recycler);
+        
+        // ✅ Initialize filter tabs - check if they exist in layout
+        tabAll = findViewById(R.id.tab_all);
+        tabPreparing = findViewById(R.id.tab_preparing);
+        tabReady = findViewById(R.id.tab_ready);
+        tabServing = findViewById(R.id.tab_serving);
+        
+        // ✅ Log to debug which views are found
+        android.util.Log.d(TAG, "Tab views initialized: all=" + (tabAll != null) + 
+            ", preparing=" + (tabPreparing != null) + 
+            ", ready=" + (tabReady != null) + 
+            ", serving=" + (tabServing != null));
     }
 
     private void getDrinkInformation() {
@@ -127,14 +162,105 @@ public class TableSelectionActivity extends AppCompatActivity
         }
     }
 
+    // ✅ Add method to setup filter tabs
+    private void setupStatusFilterTabs() {
+        if (tabAll != null) {
+            tabAll.setOnClickListener(v -> filterOrdersByStatus("all"));
+        }
+        if (tabPreparing != null) {
+            tabPreparing.setOnClickListener(v -> filterOrdersByStatus("preparing"));
+        }
+        if (tabReady != null) {
+            tabReady.setOnClickListener(v -> filterOrdersByStatus("ready"));
+        }
+        if (tabServing != null) {
+            tabServing.setOnClickListener(v -> filterOrdersByStatus("serving"));
+        }
+    }
+
+    // ✅ Add method to filter orders
+    private void filterOrdersByStatus(String status) {
+        currentStatusFilter = status;
+        updateStatusFilterSelection();
+
+        List<Order> filteredList;
+        if ("all".equals(status)) {
+            filteredList = orderDataManager.getAllActiveOrders();
+        } else {
+            Order.OrderStatus targetStatus = getOrderStatusFromString(status);
+            if (targetStatus != null) {
+                filteredList = orderDataManager.getOrdersByStatus(targetStatus);
+            } else {
+                filteredList = new ArrayList<>();
+            }
+        }
+        
+        if (orderStatusAdapter != null) {
+            orderStatusAdapter.updateOrders(filteredList);
+        }
+    }
+
+    // ✅ Add helper to convert string to enum
+    private Order.OrderStatus getOrderStatusFromString(String status) {
+        switch (status) {
+            case "preparing":
+                return Order.OrderStatus.PREPARING;
+            case "ready":
+                return Order.OrderStatus.READY;
+            case "serving":
+                return Order.OrderStatus.SERVING;
+            default:
+                return null;
+        }
+    }
+
+    // ✅ Add method to update tab UI
+    private void updateStatusFilterSelection() {
+        resetTabStyle(tabAll);
+        resetTabStyle(tabPreparing);
+        resetTabStyle(tabReady);
+        resetTabStyle(tabServing);
+
+        switch (currentStatusFilter) {
+            case "all":
+                setSelectedTabStyle(tabAll);
+                break;
+            case "preparing":
+                setSelectedTabStyle(tabPreparing);
+                break;
+            case "ready":
+                setSelectedTabStyle(tabReady);
+                break;
+            case "serving":
+                setSelectedTabStyle(tabServing);
+                break;
+        }
+    }
+
+    private void setSelectedTabStyle(TextView tab) {
+        if (tab != null) {
+            tab.setBackground(getResources().getDrawable(R.drawable.tab_rounded_selected));
+            tab.setTextColor(getResources().getColor(R.color.white));
+        }
+    }
+
+    private void resetTabStyle(TextView tab) {
+        if (tab != null) {
+            tab.setBackground(getResources().getDrawable(R.drawable.tab_rounded_unselected));
+            tab.setTextColor(getResources().getColor(R.color.text_secondary));
+        }
+    }
+
     private void setupOrderStatus() {
         if (orderStatusRecycler != null) {
-            // ✅ Use OrderDataManager instead of Local_Database_Staff directly
-            ordersList = orderDataManager.getAllOrders();
+            // ✅ Initially load all active orders
+            ordersList = orderDataManager.getAllActiveOrders();
             
-            orderAdapter = new OrderAdapter(ordersList, this);
+            orderStatusAdapter = new OrderStatusAdapter(ordersList, this);
             orderStatusRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-            orderStatusRecycler.setAdapter(orderAdapter);
+            orderStatusRecycler.setAdapter(orderStatusAdapter);
+            
+            Log.d(TAG, "Order status setup with " + ordersList.size() + " orders");
         }
     }
 
@@ -182,35 +308,17 @@ public class TableSelectionActivity extends AppCompatActivity
 
     @Override
     public void onOrderClick(Order order) {
-        if (order.getOrderStatus() == Order.OrderStatus.READY) {
-            order.updateOrderStatus(Order.OrderStatus.SERVING);
-            orderAdapter.notifyDataSetChanged();
-            Toast.makeText(this, "Order " + order.getOrderNumber() + " đang được phục vụ", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Order " + order.getOrderNumber() + " details", Toast.LENGTH_SHORT).show();
-        }
+        Toast.makeText(this, "Clicked Order: " + order.getOrderNumber(), Toast.LENGTH_SHORT).show();
+        // Add detail logic if needed
     }
-
-    // ✅ OrderDataListener implementation
-    @Override
-    public void onOrderStatusUpdate(Order order, Order.OrderStatus newStatus) {
-        // ✅ Use OrderDataManager for consistent updates
-        orderDataManager.updateOrderStatus(order, newStatus);
-    }
-
-    @Override
-    public void onPaymentStatusUpdate(Order order, Order.PaymentStatus newStatus) {
-        // ✅ Use OrderDataManager for consistent updates
-        orderDataManager.updatePaymentStatus(order, newStatus);
-    }
-
+    
     private void showOrderConfirmationDialog(Table table) {
         if (!table.isAvailable()) {
             new AlertDialog.Builder(this)
-                .setTitle("Bàn đã có khách")
-                .setMessage("Bàn " + table.getName() + " đã có khách. Bạn có muốn thêm order vào bàn này không?")
-                .setPositiveButton("Thêm order", (dialog, which) -> confirmOrder(table))
-                .setNegativeButton("Hủy", null)
+                .setTitle("Table Occupied")
+                .setMessage("Table " + table.getName() + " is occupied. Do you want to add order to this table?")
+                .setPositiveButton("Add Order", (dialog, which) -> confirmOrder(table))
+                .setNegativeButton("Cancel", null)
                 .show();
         } else {
             confirmOrder(table);
@@ -219,13 +327,13 @@ public class TableSelectionActivity extends AppCompatActivity
 
     private void confirmOrder(Table table) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Xác nhận order");
+        builder.setTitle("Confirm Order");
 
         String message = String.format(
-                "Bàn: %s\n" +
-                "Món: %s (%s)\n" +
-                "Giá: $%.2f\n\n" +
-                "Xác nhận thêm món này vào order?",
+                "Table: %s\n" +
+                "Item: %s (%s)\n" +
+                "Price: $%.2f\n\n" +
+                "Confirm adding this item to order?",
                 table.getName(),
                 selectedDrinkName != null ? selectedDrinkName : "N/A",
                 selectedDrinkSize != null ? selectedDrinkSize : "M",
@@ -234,7 +342,7 @@ public class TableSelectionActivity extends AppCompatActivity
 
         builder.setMessage(message);
 
-        builder.setPositiveButton("Xác nhận", (dialog, which) -> {
+        builder.setPositiveButton("Confirm", (dialog, which) -> {
             Intent resultIntent = new Intent();
             resultIntent.putExtra("SELECTED_TABLE_NUMBER", table.getNumber());
             resultIntent.putExtra("SELECTED_TABLE_NAME", table.getName());
@@ -245,11 +353,11 @@ public class TableSelectionActivity extends AppCompatActivity
             resultIntent.putExtra("SELECTED_DRINK_IMAGE", selectedDrinkImage);
 
             setResult(RESULT_OK, resultIntent);
-            Toast.makeText(this, "Đã thêm " + selectedDrinkName + " vào " + table.getName(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Added " + selectedDrinkName + " to " + table.getName(), Toast.LENGTH_SHORT).show();
             finish();
         });
 
-        builder.setNegativeButton("Hủy", null);
+        builder.setNegativeButton("Cancel", null);
         builder.show();
     }
 

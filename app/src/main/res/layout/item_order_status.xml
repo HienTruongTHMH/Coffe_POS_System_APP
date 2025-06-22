@@ -1,88 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="160dp"
-    android:layout_height="80dp"
+    android:layout_width="180dp"
+    android:layout_height="wrap_content"
     android:layout_marginEnd="12dp"
+    android:layout_marginBottom="4dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="4dp"
-    app:cardBackgroundColor="#FFFFFF">
+    app:cardElevation="3dp"
+    app:cardBackgroundColor="@color/background_card">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal"
-        android:padding="12dp"
-        android:gravity="center_vertical">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
 
-        <!-- Status Indicator -->
+        <!-- Top Row: Order Number and Status -->
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center_vertical">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-            <!-- Status Badge -->
+            <TextView
+                android:id="@+id/order_number"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="#2100"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
             <TextView
                 android:id="@+id/status_badge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ready to serve"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                android:textColor="#FFFFFF"
                 android:background="@drawable/status_badge_ready"
+                android:gravity="center"
                 android:paddingHorizontal="8dp"
-                android:paddingVertical="3dp" />
-
-            <!-- Order Number -->
-            <TextView
-                android:id="@+id/order_number"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="#2100"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:layout_marginTop="4dp" />
-
-            <!-- Order Count -->
-            <TextView
-                android:id="@+id/order_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="3 orders"
+                android:paddingVertical="4dp"
+                android:text="Sẵn sàng"
+                android:textColor="@color/white"
                 android:textSize="10sp"
-                android:textColor="@color/text_secondary" />
+                android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Table Info -->
+        <!-- Bottom Row: Table and Item Count -->
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:gravity="center">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-            <!-- Table Icon -->
             <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:src="@drawable/ic_table"
-                android:tint="@color/primary_brown" />
+                android:tint="@color/text_secondary"
+                android:layout_marginEnd="4dp"/>
 
-            <!-- Table Name -->
             <TextView
                 android:id="@+id/table_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Inside, table 2"
-                android:textSize="8sp"
+                android:text="Bàn 2"
                 android:textColor="@color/text_secondary"
-                android:layout_marginTop="2dp"
-                android:textAlignment="center" />
+                android:textSize="12sp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+
+            <TextView
+                android:id="@+id/order_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="3 món"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
         </LinearLayout>
-
     </LinearLayout>
-
 </androidx.cardview.widget.CardView>

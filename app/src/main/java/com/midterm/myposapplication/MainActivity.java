@@ -17,7 +17,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity 
     implements DrinkAdapter.OnDrinkClickListener,
                CurrentOrderAdapter.OnOrderItemChangeListener,
-               OrderAdapter.OnOrderClickListener,
+               OrderStatusAdapter.OnOrderClickListener, // ✅ Thay thế interface
                OrderDataManager.OrderDataListener {
 
     private static final String TAG = "MainActivity";
@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity
     // Adapters
     private DrinkAdapter drinkAdapter;
     private CurrentOrderAdapter currentOrderAdapter;
-    private OrderAdapter orderAdapter;
+    private OrderStatusAdapter orderStatusAdapter; // ✅ Sử dụng OrderStatusAdapter
 
     // Data
     private List<Drink> allDrinks;
@@ -44,11 +44,11 @@ public class MainActivity extends AppCompatActivity
     // Current state
     private String selectedTableNumber = "";
     private String selectedTableName = "";
-    private String currentStatusFilter = "preparing";
+    private String currentStatusFilter = "all"; // ✅ Đặt "all" làm mặc định
 
     // UI Components for status filter
     private LinearLayout statusFilterContainer;
-    private TextView tabPreparing, tabReady, tabServing;
+    private TextView tabAll, tabPreparing, tabReady, tabServing; // ✅ Thêm tabAll
 
     // ✅ Data Manager
     private OrderDataManager orderDataManager;
@@ -84,13 +84,13 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onOrdersUpdated(List<Order> orders) {
         ordersList = orders;
-        filterOrderStatusByType(getCurrentStatusFilter());
+        filterOrdersByStatus(currentStatusFilter);
     }
 
     @Override
     public void onOrderStatusChanged(Order order) {
-        if (orderAdapter != null) {
-            orderAdapter.notifyDataSetChanged();
+        if (orderStatusAdapter != null) { // ✅ Cập nhật adapter đúng
+            orderStatusAdapter.notifyDataSetChanged();
         }
     }
 
@@ -102,6 +102,19 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onOrderRemoved(String orderId) {
         // Handle order removal if needed
+    }
+
+    private Order.OrderStatus getOrderStatusFromString(String status) {
+        switch (status) {
+            case "preparing":
+                return Order.OrderStatus.PREPARING;
+            case "ready":
+                return Order.OrderStatus.READY;
+            case "serving":
+                return Order.OrderStatus.SERVING;
+            default:
+                return null;
+        }
     }
 
     private Order.OrderStatus getCurrentStatusFilter() {
@@ -119,6 +132,7 @@ public class MainActivity extends AppCompatActivity
         currentOrderSection = findViewById(R.id.current_order_section);
         currentTableText = findViewById(R.id.current_table_text);
         statusFilterContainer = findViewById(R.id.status_filter_container);
+        tabAll = findViewById(R.id.tab_all); // ✅ Lấy ID của tab mới
         tabPreparing = findViewById(R.id.tab_preparing);
         tabReady = findViewById(R.id.tab_ready);
         tabServing = findViewById(R.id.tab_serving);
@@ -143,46 +157,64 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setupOrderStatus() {
-        // ✅ Use OrderDataManager instead of Local_Database_Staff directly
-        ordersList = orderDataManager.getOrdersByStatus(Order.OrderStatus.PREPARING);
+        // ✅ Lấy tất cả order đang hoạt động để hiển thị ban đầu
+        ordersList = orderDataManager.getAllActiveOrders();
         
-        orderAdapter = new OrderAdapter(ordersList, this);
+        // ✅ Sử dụng OrderStatusAdapter
+        orderStatusAdapter = new OrderStatusAdapter(ordersList, this);
         orderStatusRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        orderStatusRecycler.setAdapter(orderAdapter);
+        orderStatusRecycler.setAdapter(orderStatusAdapter);
     }
 
     private void setupStatusFilterTabs() {
+        // ✅ Thêm listener cho tab "Tất cả"
+        tabAll.setOnClickListener(v -> {
+            currentStatusFilter = "all";
+            updateStatusFilterSelection();
+            filterOrdersByStatus("all");
+        });
+
         tabPreparing.setOnClickListener(v -> {
             currentStatusFilter = "preparing";
             updateStatusFilterSelection();
-            filterOrderStatusByType(Order.OrderStatus.PREPARING);
+            filterOrdersByStatus("preparing");
         });
 
         tabReady.setOnClickListener(v -> {
             currentStatusFilter = "ready";
             updateStatusFilterSelection();
-            filterOrderStatusByType(Order.OrderStatus.READY);
+            filterOrdersByStatus("ready");
         });
 
         tabServing.setOnClickListener(v -> {
             currentStatusFilter = "serving";
             updateStatusFilterSelection();
-            filterOrderStatusByType(Order.OrderStatus.SERVING);
+            filterOrdersByStatus("serving");
         });
     }
 
-    private void filterOrderStatusByType(Order.OrderStatus status) {
-        // ✅ Use OrderDataManager for consistent data
-        List<Order> filteredList = orderDataManager.getOrdersByStatus(status);
-        orderAdapter.updateOrders(filteredList);
+    // ✅ Đổi tên và cập nhật logic filter
+    private void filterOrdersByStatus(String status) {
+        List<Order> filteredList;
+        if ("all".equals(status)) {
+            filteredList = orderDataManager.getAllActiveOrders();
+        } else {
+            Order.OrderStatus targetStatus = getOrderStatusFromString(status);
+            filteredList = orderDataManager.getOrdersByStatus(targetStatus);
+        }
+        orderStatusAdapter.updateOrders(filteredList);
     }
 
     private void updateStatusFilterSelection() {
+        resetTabStyle(tabAll); // ✅ Reset tab "Tất cả"
         resetTabStyle(tabPreparing);
         resetTabStyle(tabReady);  
         resetTabStyle(tabServing);
         
         switch (currentStatusFilter) {
+            case "all": // ✅ Xử lý trạng thái cho tab "Tất cả"
+                setSelectedTabStyle(tabAll);
+                break;
             case "preparing":
                 setSelectedTabStyle(tabPreparing);
                 break;
@@ -324,21 +356,10 @@ public class MainActivity extends AppCompatActivity
         updateCurrentOrderDisplay();
     }
 
+    // ✅ Implement đúng phương thức onOrderClick từ OrderStatusAdapter
     @Override
     public void onOrderClick(Order order) {
         Toast.makeText(this, "Order " + order.getOrderNumber() + " details", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onOrderStatusUpdate(Order order, Order.OrderStatus newStatus) {
-        // ✅ Use OrderDataManager for consistent updates
-        orderDataManager.updateOrderStatus(order, newStatus);
-    }
-
-    @Override
-    public void onPaymentStatusUpdate(Order order, Order.PaymentStatus newStatus) {
-        // ✅ Use OrderDataManager for consistent updates
-        orderDataManager.updatePaymentStatus(order, newStatus);
     }
 
     @Override

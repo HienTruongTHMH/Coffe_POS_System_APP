@@ -50,6 +50,19 @@ public class OrderDataManager {
     public List<Order> getOrdersByPaymentStatus(Order.PaymentStatus status) {
         return Local_Database_Staff.getInstance().getOrdersByPaymentStatus(status);
     }
+
+    // ✅ Thêm phương thức này
+    public List<Order> getAllActiveOrders() {
+        List<Order> activeOrders = new ArrayList<>();
+        for (Order order : Local_Database_Staff.getInstance().getAllOrders()) {
+            if (order.getOrderStatus() == Order.OrderStatus.PREPARING ||
+                order.getOrderStatus() == Order.OrderStatus.READY ||
+                order.getOrderStatus() == Order.OrderStatus.SERVING) {
+                activeOrders.add(order);
+            }
+        }
+        return activeOrders;
+    }
     
     // ✅ Centralized update methods with notification
     public String addNewOrder(Order order) {
