@@ -14,35 +14,77 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Cart extends AppCompatActivity implements OrderManagementAdapter.OnOrderCardClickListener {
+public class Cart extends AppCompatActivity 
+    implements OrderAdapter.OnOrderClickListener, OrderDataManager.OrderDataListener {
 
     private RecyclerView ordersRecyclerView;
     private TextView totalOrdersCount;
-    private OrderManagementAdapter orderManagementAdapter;
-    private List<OrderManagement> allOrders;
-    private List<OrderManagement> filteredOrders;
+    private OrderAdapter orderAdapter;
+    private List<Order> allOrders;
+    private List<Order> filteredOrders;
     private String currentFilter = "all";
 
     // Filter tabs
-    private TextView btnAll, btnPreparing, btnServing, btnWaitingPayment, btnPaid;
+    private TextView btnAll, btnPreparing, btnReady, btnServing, btnCompleted;
+
+    // ✅ Data Manager
+    private OrderDataManager orderDataManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cart);
         
-        // ✅ Fix: Handle window insets properly
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
+        // ✅ Initialize data manager and register listener
+        orderDataManager = OrderDataManager.getInstance();
+        orderDataManager.addListener(this);
+
         initializeViews();
         setupOrdersData();
         setupRecyclerView();
         setupFilterTabs();
         setupBottomNavigation();
+        updateOrderCount();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // ✅ Unregister listener to prevent memory leaks
+        if (orderDataManager != null) {
+            orderDataManager.removeListener(this);
+        }
+    }
+
+    // ✅ OrderDataListener implementation
+    @Override
+    public void onOrdersUpdated(List<Order> orders) {
+        allOrders = orders;
+        filterOrders(currentFilter); // Re-apply current filter
+    }
+
+    @Override
+    public void onOrderStatusChanged(Order order) {
+        if (orderAdapter != null) {
+            orderAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public void onOrderAdded(Order order) {
+        // Update count display
+        updateOrderCount();
+    }
+
+    @Override
+    public void onOrderRemoved(String orderId) {
+        // Update count display
         updateOrderCount();
     }
 
@@ -53,65 +95,69 @@ public class Cart extends AppCompatActivity implements OrderManagementAdapter.On
         // Filter tabs
         btnAll = findViewById(R.id.btn_all);
         btnPreparing = findViewById(R.id.btn_preparing);
+        btnReady = findViewById(R.id.btn_preparing);
         btnServing = findViewById(R.id.btn_serving);
-        btnWaitingPayment = findViewById(R.id.btn_waiting_payment);
-        btnPaid = findViewById(R.id.btn_paid);
+        btnCompleted = findViewById(R.id.btn_completed);
     }
 
     private void setupOrdersData() {
-        // ✅ Sample data using existing colors
-        allOrders = new ArrayList<>();
-        allOrders.add(new OrderManagement("1", "#01015", "Regular", "Masud Rana", "paid", "paid", 250, "Inside, table 2", 3));
-        allOrders.add(new OrderManagement("2", "#01016", "Regular", "Masud Rana", "waiting_payment", "pending", 250, "Outside, chair 1", 2));
-        allOrders.add(new OrderManagement("3", "#01017", "Regular", "Masud Rana", "serving", "pending", 250, "Inside, table 5", 1));
-        allOrders.add(new OrderManagement("4", "#01018", "Regular", "Masud Rana", "preparing", "pending", 250, "Inside, table 8", 4));
-
+        // ✅ Use OrderDataManager instead of Local_Database_Staff directly
+        allOrders = orderDataManager.getAllOrders();
         filteredOrders = new ArrayList<>(allOrders);
     }
 
     private void setupRecyclerView() {
-        orderManagementAdapter = new OrderManagementAdapter(filteredOrders, this);
+        orderAdapter = new OrderAdapter(filteredOrders, this);
         ordersRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        ordersRecyclerView.setAdapter(orderManagementAdapter);
+        ordersRecyclerView.setAdapter(orderAdapter);
     }
 
     private void setupFilterTabs() {
         btnAll.setOnClickListener(v -> filterOrders("all"));
         btnPreparing.setOnClickListener(v -> filterOrders("preparing"));
+        btnReady.setOnClickListener(v -> filterOrders("ready"));
         btnServing.setOnClickListener(v -> filterOrders("serving"));
-        btnWaitingPayment.setOnClickListener(v -> filterOrders("waiting_payment"));
-        btnPaid.setOnClickListener(v -> filterOrders("paid"));
+        btnCompleted.setOnClickListener(v -> filterOrders("completed"));
     }
 
     private void filterOrders(String filter) {
         currentFilter = filter;
         updateFilterTabs();
         
-        filteredOrders.clear();
-        
         if ("all".equals(filter)) {
-            filteredOrders.addAll(allOrders);
+            filteredOrders = new ArrayList<>(allOrders);
         } else {
-            for (OrderManagement order : allOrders) {
-                if (filter.equals(order.getOrderStatus())) {
-                    filteredOrders.add(order);
-                }
-            }
+            // ✅ Use OrderDataManager for consistent filtering
+            Order.OrderStatus targetStatus = getOrderStatusFromString(filter);
+            filteredOrders = orderDataManager.getOrdersByStatus(targetStatus);
         }
         
-        orderManagementAdapter.updateOrders(filteredOrders);
+        orderAdapter.updateOrders(filteredOrders);
         updateOrderCount();
     }
 
+    private Order.OrderStatus getOrderStatusFromString(String status) {
+        switch (status) {
+            case "preparing":
+                return Order.OrderStatus.PREPARING;
+            case "ready":
+                return Order.OrderStatus.READY;
+            case "serving":
+                return Order.OrderStatus.SERVING;
+            case "completed":
+                return Order.OrderStatus.COMPLETED;
+            default:
+                return Order.OrderStatus.PREPARING;
+        }
+    }
+
     private void updateFilterTabs() {
-        // Reset all tabs
         resetTabStyle(btnAll);
         resetTabStyle(btnPreparing);
+        resetTabStyle(btnReady);
         resetTabStyle(btnServing);
-        resetTabStyle(btnWaitingPayment);
-        resetTabStyle(btnPaid);
+        resetTabStyle(btnCompleted);
         
-        // Set selected tab
         switch (currentFilter) {
             case "all":
                 setSelectedTabStyle(btnAll);
@@ -119,14 +165,14 @@ public class Cart extends AppCompatActivity implements OrderManagementAdapter.On
             case "preparing":
                 setSelectedTabStyle(btnPreparing);
                 break;
+            case "ready":
+                setSelectedTabStyle(btnReady);
+                break;
             case "serving":
                 setSelectedTabStyle(btnServing);
                 break;
-            case "waiting_payment":
-                setSelectedTabStyle(btnWaitingPayment);
-                break;
-            case "paid":
-                setSelectedTabStyle(btnPaid);
+            case "completed":
+                setSelectedTabStyle(btnCompleted);
                 break;
         }
     }
@@ -147,7 +193,7 @@ public class Cart extends AppCompatActivity implements OrderManagementAdapter.On
 
     private void setupBottomNavigation() {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_bar);
-        bottomNavigationView.setSelectedItemId(R.id.nav_cart); // ✅ Set selected
+        bottomNavigationView.setSelectedItemId(R.id.nav_cart);
         
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
@@ -155,15 +201,15 @@ public class Cart extends AppCompatActivity implements OrderManagementAdapter.On
             if (itemId == R.id.nav_order) {
                 Intent intent = new Intent(Cart.this, MainActivity.class);
                 startActivity(intent);
-                finish(); // ✅ Finish current activity
+                finish();
                 return true;
             } else if (itemId == R.id.nav_list) {
                 Intent intent = new Intent(Cart.this, TableSelectionActivity.class);
                 startActivity(intent);
-                finish(); // ✅ Finish current activity
+                finish();
                 return true;
             } else if (itemId == R.id.nav_cart) {
-                return true; // Already on this screen
+                return true;
             } else if (itemId == R.id.nav_package) {
                 Toast.makeText(this, "Package feature coming soon", Toast.LENGTH_SHORT).show();
                 return true;
@@ -176,15 +222,19 @@ public class Cart extends AppCompatActivity implements OrderManagementAdapter.On
     }
 
     @Override
-    public void onOrderCardClick(OrderManagement order) {
-        // TODO: Navigate to order details screen
+    public void onOrderClick(Order order) {
         Toast.makeText(this, "Order details: " + order.getOrderNumber(), Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void onOrderStatusUpdate(OrderManagement order, String newStatus) {
-        order.setOrderStatus(newStatus);
-        orderManagementAdapter.notifyDataSetChanged();
-        Toast.makeText(this, "Order " + order.getOrderNumber() + " status updated", Toast.LENGTH_SHORT).show();
+    public void onOrderStatusUpdate(Order order, Order.OrderStatus newStatus) {
+        // ✅ Use OrderDataManager for consistent updates
+        orderDataManager.updateOrderStatus(order, newStatus);
+    }
+
+    @Override
+    public void onPaymentStatusUpdate(Order order, Order.PaymentStatus newStatus) {
+        // ✅ Use OrderDataManager for consistent updates
+        orderDataManager.updatePaymentStatus(order, newStatus);
     }
 }

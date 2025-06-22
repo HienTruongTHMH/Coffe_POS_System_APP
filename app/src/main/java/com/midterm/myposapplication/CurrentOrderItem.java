@@ -9,13 +9,13 @@ public class CurrentOrderItem {
     private int imageResId; // ✅ Changed to match Drink and OrderItem
 
     // ✅ Keep existing constructor signature but fix field name
-    public CurrentOrderItem(String drinkId, String drinkName, double price, int quantity, String size, int imageResourceId) {
+    public CurrentOrderItem(String drinkId, String drinkName, double price, int quantity, String size, int imageResId) {
         this.drinkId = drinkId;
         this.drinkName = drinkName;
         this.price = price;
         this.quantity = quantity;
         this.size = size;
-        this.imageResId = imageResourceId; // ✅ Map parameter to correct field
+        this.imageResId = imageResId; // ✅ Map parameter to correct field
     }
 
     // Getters and Setters
@@ -40,9 +40,9 @@ public class CurrentOrderItem {
 
     // ✅ Keep backward compatibility method
     @Deprecated
-    public int getImageResourceId() { return imageResId; }
+    public int getimageResId() { return imageResId; }
     @Deprecated
-    public void setImageResourceId(int imageResourceId) { this.imageResId = imageResourceId; }
+    public void setimageResId(int imageResId) { this.imageResId = imageResId; }
 
     // Helper method
     public double getTotalPrice() {

@@ -50,8 +50,8 @@ public class CurrentOrderAdapter extends RecyclerView.Adapter<CurrentOrderAdapte
         holder.totalPrice.setText(String.format("$%.2f", item.getTotalPrice()));
         
         // Set image
-        if (item.getImageResourceId() != 0) {
-            holder.itemImage.setImageResource(item.getImageResourceId());
+        if (item.getimageResId() != 0) {
+            holder.itemImage.setImageResource(item.getimageResId());
         } else {
             holder.itemImage.setImageResource(R.drawable.placeholder_drink);
         }

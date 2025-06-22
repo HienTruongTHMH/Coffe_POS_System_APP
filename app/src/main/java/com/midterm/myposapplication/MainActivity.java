@@ -3,8 +3,6 @@ package com.midterm.myposapplication;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,8 +16,9 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity 
     implements DrinkAdapter.OnDrinkClickListener,
-               CurrentOrderAdapter.OnOrderItemChangeListener, // ✅ Change to OnOrderItemClickListener
-               OrderStatusAdapter.OnOrderStatusClickListener {
+               CurrentOrderAdapter.OnOrderItemChangeListener,
+               OrderAdapter.OnOrderClickListener,
+               OrderDataManager.OrderDataListener {
 
     private static final String TAG = "MainActivity";
     private static final int REQUEST_TABLE_SELECTION = 1001;
@@ -27,51 +26,96 @@ public class MainActivity extends AppCompatActivity
     // UI Components
     private RecyclerView drinksRecyclerView;
     private RecyclerView currentOrderRecyclerView;
-    private RecyclerView orderStatusRecycler; // ✅ New component
-    private LinearLayout categoryTabsContainer;
+    private RecyclerView orderStatusRecycler;
     private LinearLayout currentOrderSection;
     private TextView currentTableText;
 
     // Adapters
     private DrinkAdapter drinkAdapter;
     private CurrentOrderAdapter currentOrderAdapter;
-    private OrderStatusAdapter orderStatusAdapter; // ✅ New adapter
+    private OrderAdapter orderAdapter;
 
     // Data
     private List<Drink> allDrinks;
     private List<Drink> filteredDrinks;
-    private List<CurrentOrderItem> currentOrderItems; // ✅ FIXED data type
-    private List<OrderStatus> orderStatusList; // ✅ New data
+    private List<CurrentOrderItem> currentOrderItems;
+    private List<Order> ordersList;
 
     // Current state
-    // private String currentCategory = "All";
     private String selectedTableNumber = "";
     private String selectedTableName = "";
-    private String currentStatusFilter = "preparing"; // Default filter
+    private String currentStatusFilter = "preparing";
 
     // UI Components for status filter
     private LinearLayout statusFilterContainer;
     private TextView tabPreparing, tabReady, tabServing;
+
+    // ✅ Data Manager
+    private OrderDataManager orderDataManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // ✅ Initialize data manager and register listener
+        orderDataManager = OrderDataManager.getInstance();
+        orderDataManager.addListener(this);
+
         initializeViews();
         setupDrinksData();
         setupRecyclerViews();
-        setupStatusFilterTabs(); // ✅ Add this
+        setupStatusFilterTabs();
         setupOrderStatus();
         setupBottomNavigation();
         handleIntent();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // ✅ Unregister listener to prevent memory leaks
+        if (orderDataManager != null) {
+            orderDataManager.removeListener(this);
+        }
+    }
+
+    // ✅ OrderDataListener implementation
+    @Override
+    public void onOrdersUpdated(List<Order> orders) {
+        ordersList = orders;
+        filterOrderStatusByType(getCurrentStatusFilter());
+    }
+
+    @Override
+    public void onOrderStatusChanged(Order order) {
+        if (orderAdapter != null) {
+            orderAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public void onOrderAdded(Order order) {
+        Toast.makeText(this, "Đơn hàng mới: " + order.getOrderNumber(), Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onOrderRemoved(String orderId) {
+        // Handle order removal if needed
+    }
+
+    private Order.OrderStatus getCurrentStatusFilter() {
+        switch (currentStatusFilter) {
+            case "ready": return Order.OrderStatus.READY;
+            case "serving": return Order.OrderStatus.SERVING;
+            default: return Order.OrderStatus.PREPARING;
+        }
+    }
+
     private void initializeViews() {
         drinksRecyclerView = findViewById(R.id.drinks_recycler_view);
         currentOrderRecyclerView = findViewById(R.id.current_order_items);
-        orderStatusRecycler = findViewById(R.id.order_status_recycler); // ✅ New
-        // categoryTabsContainer = findViewById(R.id.category_tabs_container);
+        orderStatusRecycler = findViewById(R.id.order_status_recycler);
         currentOrderSection = findViewById(R.id.current_order_section);
         currentTableText = findViewById(R.id.current_table_text);
         statusFilterContainer = findViewById(R.id.status_filter_container);
@@ -81,28 +125,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setupDrinksData() {
-        allDrinks = new ArrayList<>();
-
-        // ✅ Use correct constructor: (id, name, price, imageResId, hasSizes)
-        // Coffee drinks
-        allDrinks.add(new Drink("1", "Espresso", 3.50, R.drawable.placeholder_drink, true));
-        allDrinks.add(new Drink("2", "Americano", 4.00, R.drawable.placeholder_drink, true));
-        allDrinks.add(new Drink("3", "Cappuccino", 4.50, R.drawable.placeholder_drink, true));
-        allDrinks.add(new Drink("4", "Latte", 5.00, R.drawable.placeholder_drink, true));
-        allDrinks.add(new Drink("5", "Macchiato", 5.50, R.drawable.placeholder_drink, true));
-
-        // Tea drinks
-        allDrinks.add(new Drink("6", "Green Tea", 3.00, R.drawable.placeholder_drink, true));
-        allDrinks.add(new Drink("7", "Earl Grey", 3.25, R.drawable.placeholder_drink, true));
-        allDrinks.add(new Drink("8", "Chamomile", 3.25, R.drawable.placeholder_drink, true));
-        allDrinks.add(new Drink("9", "Jasmine Tea", 3.50, R.drawable.placeholder_drink, true));
-
-        // Cold drinks
-        allDrinks.add(new Drink("10", "Iced Coffee", 4.25, R.drawable.placeholder_drink, true));
-        allDrinks.add(new Drink("11", "Frappuccino", 5.75, R.drawable.placeholder_drink, false));
-        allDrinks.add(new Drink("12", "Iced Tea", 3.75, R.drawable.placeholder_drink, true));
-        allDrinks.add(new Drink("13", "Smoothie", 6.00, R.drawable.placeholder_drink, false));
-
+        allDrinks = Local_Database_Staff.getInstance().getAllDrinks();
         filteredDrinks = new ArrayList<>(allDrinks);
         currentOrderItems = new ArrayList<>();
     }
@@ -119,47 +142,46 @@ public class MainActivity extends AppCompatActivity
         currentOrderRecyclerView.setAdapter(currentOrderAdapter);
     }
 
-    // ✅ New method - Setup Order Status
     private void setupOrderStatus() {
-        // Sample data
-        orderStatusList = new ArrayList<>();
-        orderStatusList.add(new OrderStatus("1", "#2100", "Inside, table 2", "ready", 3));
-        orderStatusList.add(new OrderStatus("2", "#2101", "Outside, chair 1", "preparing", 2));
-        orderStatusList.add(new OrderStatus("3", "#2102", "Inside, table 5", "ready", 1));
-
-        // Setup adapter
-        orderStatusAdapter = new OrderStatusAdapter(orderStatusList, this);
+        // ✅ Use OrderDataManager instead of Local_Database_Staff directly
+        ordersList = orderDataManager.getOrdersByStatus(Order.OrderStatus.PREPARING);
+        
+        orderAdapter = new OrderAdapter(ordersList, this);
         orderStatusRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        orderStatusRecycler.setAdapter(orderStatusAdapter);
+        orderStatusRecycler.setAdapter(orderAdapter);
     }
 
     private void setupStatusFilterTabs() {
         tabPreparing.setOnClickListener(v -> {
             currentStatusFilter = "preparing";
             updateStatusFilterSelection();
-            filterOrderStatusByType("preparing");
+            filterOrderStatusByType(Order.OrderStatus.PREPARING);
         });
 
         tabReady.setOnClickListener(v -> {
             currentStatusFilter = "ready";
             updateStatusFilterSelection();
-            filterOrderStatusByType("ready");
+            filterOrderStatusByType(Order.OrderStatus.READY);
         });
 
         tabServing.setOnClickListener(v -> {
-            currentStatusFilter = "in_service";
+            currentStatusFilter = "serving";
             updateStatusFilterSelection();
-            filterOrderStatusByType("in_service");
+            filterOrderStatusByType(Order.OrderStatus.SERVING);
         });
     }
 
+    private void filterOrderStatusByType(Order.OrderStatus status) {
+        // ✅ Use OrderDataManager for consistent data
+        List<Order> filteredList = orderDataManager.getOrdersByStatus(status);
+        orderAdapter.updateOrders(filteredList);
+    }
+
     private void updateStatusFilterSelection() {
-        // Reset all tabs
         resetTabStyle(tabPreparing);
-        resetTabStyle(tabReady);
+        resetTabStyle(tabReady);  
         resetTabStyle(tabServing);
         
-        // Set selected tab
         switch (currentStatusFilter) {
             case "preparing":
                 setSelectedTabStyle(tabPreparing);
@@ -167,7 +189,7 @@ public class MainActivity extends AppCompatActivity
             case "ready":
                 setSelectedTabStyle(tabReady);
                 break;
-            case "in_service":
+            case "serving":
                 setSelectedTabStyle(tabServing);
                 break;
         }
@@ -183,16 +205,6 @@ public class MainActivity extends AppCompatActivity
         tab.setTextColor(getResources().getColor(R.color.text_secondary));
     }
 
-    private void filterOrderStatusByType(String statusType) {
-        List<OrderStatus> filteredList = new ArrayList<>();
-        for (OrderStatus orderStatus : orderStatusList) {
-            if (statusType.equals(orderStatus.getStatus())) {
-                filteredList.add(orderStatus);
-            }
-        }
-        orderStatusAdapter.updateOrderStatus(filteredList);
-    }
-
     private void setupBottomNavigation() {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_bar);
         bottomNavigationView.setSelectedItemId(R.id.nav_order);
@@ -201,13 +213,12 @@ public class MainActivity extends AppCompatActivity
             int itemId = item.getItemId();
 
             if (itemId == R.id.nav_order) {
-                return true; // Already on this screen
+                return true;
             } else if (itemId == R.id.nav_list) {
                 Intent intent = new Intent(MainActivity.this, TableSelectionActivity.class);
                 startActivity(intent);
                 return true;
             } else if (itemId == R.id.nav_cart) {
-                // ✅ Add Cart navigation
                 Intent intent = new Intent(MainActivity.this, Cart.class);
                 startActivity(intent);
                 return true;
@@ -215,11 +226,8 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(this, "Package feature coming soon", Toast.LENGTH_SHORT).show();
                 return true;
             } else if (itemId == R.id.nav_profile) {
-                 // TODO: Navigate to Profile/Settings screen
                 Intent intent = new Intent(MainActivity.this, Profile.class);
-                intent.putExtra("MODE", "TABLE_FIRST");
                 startActivity(intent);
-//                Toast.makeText(this, "Profile feature coming soon", Toast.LENGTH_SHORT).show();
                 return true;
             }
             return false;
@@ -246,7 +254,7 @@ public class MainActivity extends AppCompatActivity
             intent.putExtra("SELECTED_DRINK_NAME", drink.getName());
             intent.putExtra("SELECTED_DRINK_PRICE", drink.getPrice());
             intent.putExtra("SELECTED_DRINK_SIZE", "M");
-            intent.putExtra("SELECTED_DRINK_IMAGE", drink.getImageResId()); // ✅ Correct method name
+            intent.putExtra("SELECTED_DRINK_IMAGE", drink.getImageResId());
             startActivityForResult(intent, REQUEST_TABLE_SELECTION);
         } else {
             addToCurrentOrder(drink);
@@ -270,7 +278,7 @@ public class MainActivity extends AppCompatActivity
                 drink.getPrice(),
                 1,
                 "M",
-                drink.getImageResId() // ✅ Both methods now consistent
+                drink.getImageResId()
             ));
         }
         
@@ -298,7 +306,6 @@ public class MainActivity extends AppCompatActivity
         return total;
     }
 
-    // ✅ Change method names to match OnOrderItemClickListener interface
     @Override
     public void onQuantityChanged(CurrentOrderItem item, int newQuantity) {
         if (newQuantity <= 0) {
@@ -317,20 +324,23 @@ public class MainActivity extends AppCompatActivity
         updateCurrentOrderDisplay();
     }
 
-    // ✅ New method - Handle Order Status clicks
     @Override
-    public void onOrderStatusClick(OrderStatus orderStatus) {
-        if ("ready".equals(orderStatus.getStatus())) {
-            // Mark as served
-            orderStatus.setStatus("served");
-            orderStatusAdapter.notifyDataSetChanged();
-            Toast.makeText(this, "Order " + orderStatus.getOrderNumber() + " marked as served", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Order " + orderStatus.getOrderNumber() + " details", Toast.LENGTH_SHORT).show();
-        }
+    public void onOrderClick(Order order) {
+        Toast.makeText(this, "Order " + order.getOrderNumber() + " details", Toast.LENGTH_SHORT).show();
     }
 
-    // ✅ Add to MainActivity.java - new interface methods
+    @Override
+    public void onOrderStatusUpdate(Order order, Order.OrderStatus newStatus) {
+        // ✅ Use OrderDataManager for consistent updates
+        orderDataManager.updateOrderStatus(order, newStatus);
+    }
+
+    @Override
+    public void onPaymentStatusUpdate(Order order, Order.PaymentStatus newStatus) {
+        // ✅ Use OrderDataManager for consistent updates
+        orderDataManager.updatePaymentStatus(order, newStatus);
+    }
+
     @Override
     public void onConfirmOrder(List<CurrentOrderItem> items) {
         if (items.isEmpty()) {
@@ -338,24 +348,10 @@ public class MainActivity extends AppCompatActivity
             return;
         }
         
-        // Create Order from CurrentOrderItems
         Order order = createOrderFromCurrentItems();
         
-        // Generate order number
-        String orderNumber = "#" + (2100 + orderStatusList.size() + 1);
-        
-        // Create OrderStatus
-        OrderStatus newOrderStatus = new OrderStatus(
-            order.getOrderId(),
-            orderNumber,
-            selectedTableName,
-            "preparing", // Initial status
-            items.size()
-        );
-        
-        // Add to order status list
-        orderStatusList.add(newOrderStatus);
-        orderStatusAdapter.notifyDataSetChanged();
+        // ✅ Use OrderDataManager for consistent updates
+        String orderNumber = orderDataManager.addNewOrder(order);
         
         // Clear current order
         currentOrderItems.clear();
@@ -366,10 +362,7 @@ public class MainActivity extends AppCompatActivity
         selectedTableName = "";
         updateCurrentOrderDisplay();
         
-        // Show success message
         Toast.makeText(this, "Đã xác nhận đơn hàng " + orderNumber, Toast.LENGTH_SHORT).show();
-        
-        Log.d(TAG, "Order confirmed: " + orderNumber + " with " + items.size() + " items");
     }
 
     @Override
@@ -379,11 +372,9 @@ public class MainActivity extends AppCompatActivity
             return;
         }
         
-        // Clear current order
         currentOrderItems.clear();
         currentOrderAdapter.notifyDataSetChanged();
         
-        // Reset table selection
         selectedTableNumber = "";
         selectedTableName = "";
         updateCurrentOrderDisplay();
@@ -391,31 +382,18 @@ public class MainActivity extends AppCompatActivity
         Toast.makeText(this, "Đã hủy đơn hàng", Toast.LENGTH_SHORT).show();
     }
 
-    private OrderItem convertToOrderItem(CurrentOrderItem currentItem) {
-        return new OrderItem(
-            currentItem.getDrinkId(),
-            currentItem.getDrinkName(),
-            currentItem.getPrice(),
-            currentItem.getQuantity(),
-            currentItem.getSize(),
-            currentItem.getImageResourceId()
-        );
-    }
-
-    private List<OrderItem> convertCurrentOrderToOrderItems() {
-        List<OrderItem> orderItems = new ArrayList<>();
-        for (CurrentOrderItem currentItem : currentOrderItems) {
-            orderItems.add(convertToOrderItem(currentItem));
-        }
-        return orderItems;
-    }
-
-    // Khi cần tạo Order object:
     private Order createOrderFromCurrentItems() {
-        Order order = new Order(selectedTableNumber, selectedTableName);
-        List<OrderItem> orderItems = convertCurrentOrderToOrderItems();
-        for (OrderItem item : orderItems) {
-            order.addItem(item);
+        Order order = new Order(selectedTableNumber, selectedTableName, "Nhân viên");
+        for (CurrentOrderItem currentItem : currentOrderItems) {
+            OrderItem orderItem = new OrderItem(
+                currentItem.getDrinkId(),
+                currentItem.getDrinkName(),
+                currentItem.getPrice(), // ✅ Fix: Use getPrice() instead of getUnitPrice()
+                currentItem.getQuantity(),
+                currentItem.getSize(),
+                currentItem.getImageResId()
+            );
+            order.addItem(orderItem);
         }
         return order;
     }
@@ -428,7 +406,6 @@ public class MainActivity extends AppCompatActivity
             selectedTableNumber = data.getStringExtra("SELECTED_TABLE_NUMBER");
             selectedTableName = data.getStringExtra("SELECTED_TABLE_NAME");
             
-            // Add the drink to order
             String drinkId = data.getStringExtra("SELECTED_DRINK_ID");
             String drinkName = data.getStringExtra("SELECTED_DRINK_NAME");
             double drinkPrice = data.getDoubleExtra("SELECTED_DRINK_PRICE", 0);
@@ -443,23 +420,6 @@ public class MainActivity extends AppCompatActivity
             }
             
             updateCurrentOrderDisplay();
-            
-            Log.d(TAG, "Table selected: " + selectedTableName);
-        }
-    }
-
-    // ✅ Add to OrderStatusClickListener implementation
-    @Override
-    public void onOrderStatusDoubleClick(OrderStatus orderStatus) {
-        if ("ready".equals(orderStatus.getStatus())) {
-            orderStatus.setStatus("in_service");
-            orderStatusAdapter.notifyDataSetChanged();
-            Toast.makeText(this, "Order " + orderStatus.getOrderNumber() + " đang được phục vụ", Toast.LENGTH_SHORT).show();
-            
-            // Update filter if currently viewing "ready" status
-            if ("ready".equals(currentStatusFilter)) {
-                filterOrderStatusByType("ready");
-            }
         }
     }
 }
