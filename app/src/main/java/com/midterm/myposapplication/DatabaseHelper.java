@@ -143,7 +143,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         values.put(COLUMN_TABLE_NUMBER, order.getTableNumber());
-        values.put(COLUMN_PAYMENT_METHOD, order.getPaymentMethod());
+//        values.put(COLUMN_PAYMENT_METHOD, order.getPaymentMethod());
         values.put(COLUMN_TOTAL_AMOUNT, order.getTotalAmount());
         values.put(COLUMN_STATUS, "completed"); // Default status
 
