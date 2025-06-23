@@ -44,6 +44,16 @@
                 android:value=".AuthActivity" />
         </activity>
 
+        <activity
+            android:name=".Profile"
+            android:exported="false"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+
         <!-- Cart - Màn hình lịch sử đơn hàng -->
         <activity
             android:name=".Cart"
