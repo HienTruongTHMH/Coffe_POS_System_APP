@@ -1,5 +1,7 @@
 package com.midterm.myposapplication;
 
+
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +13,8 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.midterm.myposapplication.utils.FormatUtils;
+import com.midterm.myposapplication.utils.IdGenerator;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +47,7 @@ public class MainActivity extends AppCompatActivity
     // Current state
     private String selectedTableNumber = "";
     private String selectedTableName = "";
-    private String currentStatusFilter = "all";
+    private String currentStatusFilter = Constants.FILTER_ALL;
 
     // UI Components for status filter
     private TextView tabAll, tabPreparing, tabReady, tabServing;
@@ -83,33 +87,6 @@ public class MainActivity extends AppCompatActivity
         if (orderManager != null) {
             orderManager.removeListener(this);
         }
-    }
-
-    // ✅ FIXED: OrderManager.OrderListener implementation only
-    @Override
-    public void onOrdersUpdated(List<Order> orders) {
-        ordersList = orders;
-        filterOrdersByStatus(currentStatusFilter);
-        Log.d(TAG, "Orders updated: " + orders.size() + " orders");
-    }
-
-    @Override
-    public void onOrderStatusChanged(Order order) {
-        if (orderStatusAdapter != null) {
-            orderStatusAdapter.notifyDataSetChanged();
-        }
-        Log.d(TAG, "Order status changed: " + order.getOrderNumber());
-    }
-
-    @Override
-    public void onOrderAdded(Order order) {
-        Toast.makeText(this, "Đơn hàng mới: " + order.getOrderNumber(), Toast.LENGTH_SHORT).show();
-        Log.d(TAG, "Order added: " + order.getOrderNumber());
-    }
-
-    @Override
-    public void onOrderRemoved(String orderId) {
-        Log.d(TAG, "Order removed: " + orderId);
     }
 
     private void initializeViews() {
@@ -165,72 +142,71 @@ public class MainActivity extends AppCompatActivity
 
     private void setupStatusFilterTabs() {
         tabAll.setOnClickListener(v -> {
-            currentStatusFilter = "all";
+            currentStatusFilter = Constants.FILTER_ALL;
             updateStatusFilterSelection();
-            filterOrdersByStatus("all");
+            filterOrdersByStatus(Constants.FILTER_ALL);
         });
 
         tabPreparing.setOnClickListener(v -> {
-            currentStatusFilter = "preparing";
+            currentStatusFilter = Constants.FILTER_PREPARING;
             updateStatusFilterSelection();
-            filterOrdersByStatus("preparing");
+            filterOrdersByStatus(Constants.FILTER_PREPARING);
         });
 
         tabServing.setOnClickListener(v -> {
-            currentStatusFilter = "on_service"; // Thay đổi từ "serving" thành "on_service"
+            currentStatusFilter = Constants.FILTER_ON_SERVICE;
             updateStatusFilterSelection();
-            filterOrdersByStatus("on_service");
+            filterOrdersByStatus(Constants.FILTER_ON_SERVICE);
         });
     }
 
     private void filterOrdersByStatus(String status) {
-        List<Order> filteredList;
-        
-        if ("all".equals(status)) {
-            filteredList = orderManager.getActiveOrders();
+    List<Order> filteredList;
+    
+    if (Constants.FILTER_ALL.equals(status)) {
+        filteredList = orderManager.getActiveOrders();
+    } else {
+        Order.OrderStatus targetStatus = getOrderStatusFromString(status);
+        if (targetStatus != null) {
+            filteredList = orderManager.getOrdersByStatus(targetStatus);
         } else {
-            Order.OrderStatus targetStatus = getOrderStatusFromString(status);
-            if (targetStatus != null) {
-                filteredList = orderManager.getOrdersByStatus(targetStatus);
-            } else {
-                filteredList = new ArrayList<>();
-            }
+            filteredList = new ArrayList<>();
         }
-        
-        orderStatusAdapter.updateOrders(filteredList);
-        Log.d(TAG, "Filtered orders by " + status + ": " + filteredList.size() + " orders");
     }
+    
+    orderStatusAdapter.updateOrders(filteredList);
+    Log.d(TAG, "Filtered orders by " + status + ": " + filteredList.size() + " orders");
+}
 
     private Order.OrderStatus getOrderStatusFromString(String status) {
         switch (status) {
-            case "on_service":
+            case Constants.FILTER_ON_SERVICE:
                 return Order.OrderStatus.ON_SERVICE;
-            case "preparing":
+            case Constants.FILTER_PREPARING:
             default:
                 return Order.OrderStatus.PREPARING;
         }
     }
 
     private void updateStatusFilterSelection() {
-        // Reset all tabs
-        resetTabStyle(tabAll);
-        resetTabStyle(tabPreparing);
-        resetTabStyle(tabServing);
-        // XÓA BỎ: resetTabStyle(tabReady);
-        
-        // Set selected tab
-        switch (currentStatusFilter) {
-            case "all":
-                setSelectedTabStyle(tabAll);
-                break;
-            case "preparing":
-                setSelectedTabStyle(tabPreparing);
-                break;
-            case "on_service": // Thay đổi từ "serving"/"ready" thành "on_service"
-                setSelectedTabStyle(tabServing);
-                break;
-        }
+    // Reset all tabs
+    resetTabStyle(tabAll);
+    resetTabStyle(tabPreparing);
+    resetTabStyle(tabServing);
+    
+    // Set selected tab
+    switch (currentStatusFilter) {
+        case Constants.FILTER_ALL:
+            setSelectedTabStyle(tabAll);
+            break;
+        case Constants.FILTER_PREPARING:
+            setSelectedTabStyle(tabPreparing);
+            break;
+        case Constants.FILTER_ON_SERVICE:
+            setSelectedTabStyle(tabServing);
+            break;
     }
+}
 
     private void setSelectedTabStyle(TextView tab) {
         tab.setBackground(getResources().getDrawable(R.drawable.tab_rounded_selected));
@@ -272,16 +248,16 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void handleIntent() {
-        Intent intent = getIntent();
-        if (intent != null) {
-            String mode = intent.getStringExtra("MODE");
-            if ("TABLE_SELECTED".equals(mode)) {
-                selectedTableNumber = intent.getStringExtra("SELECTED_TABLE_NUMBER");
-                selectedTableName = intent.getStringExtra("SELECTED_TABLE_NAME");
-                updateCurrentOrderUI();
-            }
+    Intent intent = getIntent();
+    if (intent != null) {
+        String mode = intent.getStringExtra("MODE");
+        if ("TABLE_SELECTED".equals(mode)) {
+            selectedTableNumber = intent.getStringExtra(Constants.KEY_TABLE_NUMBER);
+            selectedTableName = intent.getStringExtra("SELECTED_TABLE_NAME");
+            updateCurrentOrderUI();
         }
     }
+}
 
     @Override
     public void onDrinkClick(Drink drink) {
@@ -329,25 +305,25 @@ public class MainActivity extends AppCompatActivity
 
     // ✅ FIXED: Central UI update method
     private void updateCurrentOrderUI() {
-        // Update current order section visibility and text
-        if (!selectedTableName.isEmpty()) {
-            currentOrderSection.setVisibility(android.view.View.VISIBLE);
-            int totalItems = getTotalItems();
-            currentTableText.setText(selectedTableName + " - " + totalItems + " món");
-        } else {
-            currentOrderSection.setVisibility(android.view.View.GONE);
-        }
-
-        // ✅ FIXED: Show/hide action buttons based on cart content
-        if (currentOrderAdapter != null) {
-            boolean hasItems = !currentOrderItems.isEmpty();
-            Log.d(TAG, "Setting action buttons visibility: " + hasItems + " (items count: " + currentOrderItems.size() + ")");
-            currentOrderAdapter.setShowActionButtons(hasItems);
-            currentOrderAdapter.notifyDataSetChanged();
-        }
-        
-        Log.d(TAG, "UI updated - Table: " + selectedTableName + ", Items: " + currentOrderItems.size());
+    if (!selectedTableName.isEmpty()) {
+        currentOrderSection.setVisibility(android.view.View.VISIBLE);
+        int totalItems = getTotalItems();
+        // Sử dụng FormatUtils
+        String tableText = FormatUtils.formatTableNumber(this, selectedTableNumber) + " - " + totalItems + " items";
+        currentTableText.setText(tableText);
+    } else {
+        currentOrderSection.setVisibility(android.view.View.GONE);
     }
+
+    if (currentOrderAdapter != null) {
+        boolean hasItems = !currentOrderItems.isEmpty();
+        Log.d(TAG, "Setting action buttons visibility: " + hasItems + " (items count: " + currentOrderItems.size() + ")");
+        currentOrderAdapter.setShowActionButtons(hasItems);
+        currentOrderAdapter.notifyDataSetChanged();
+    }
+    
+    Log.d(TAG, "UI updated - Table: " + selectedTableName + ", Items: " + currentOrderItems.size());
+}
 
     private int getTotalItems() {
         int total = 0;
@@ -379,12 +355,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onConfirmOrder(List<CurrentOrderItem> items) {
         if (items.isEmpty()) {
-            Toast.makeText(this, "Không có món nào để xác nhận", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "No items to confirm", Toast.LENGTH_SHORT).show();
             return;
         }
         
         if (selectedTableNumber.isEmpty()) {
-            Toast.makeText(this, "Vui lòng chọn bàn", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please select a table", Toast.LENGTH_SHORT).show();
             return;
         }
         
@@ -397,15 +373,15 @@ public class MainActivity extends AppCompatActivity
         selectedTableNumber = "";
         selectedTableName = "";
         updateCurrentOrderUI();
-        
-        Toast.makeText(this, "Đã xác nhận đơn hàng " + orderNumber, Toast.LENGTH_SHORT).show();
+
+        Toast.makeText(this, "Order confirmed: " + orderNumber, Toast.LENGTH_SHORT).show();
         Log.d(TAG, "Order confirmed: " + orderNumber);
     }
 
     @Override
     public void onCancelOrder() {
         if (currentOrderItems.isEmpty()) {
-            Toast.makeText(this, "Không có món nào để hủy", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "No items to cancel", Toast.LENGTH_SHORT).show();
             return;
         }
         
@@ -413,8 +389,8 @@ public class MainActivity extends AppCompatActivity
         selectedTableNumber = "";
         selectedTableName = "";
         updateCurrentOrderUI();
-        
-        Toast.makeText(this, "Đã hủy đơn hàng", Toast.LENGTH_SHORT).show();
+
+        Toast.makeText(this, "Order cancelled", Toast.LENGTH_SHORT).show();
         Log.d(TAG, "Order cancelled");
     }
 
@@ -460,5 +436,31 @@ public class MainActivity extends AppCompatActivity
             
             updateCurrentOrderUI();
         }
+    }
+
+    @Override
+    public void onOrderCreated(Order order) {
+        runOnUiThread(this::loadActiveOrders);
+    }
+
+    @Override
+    public void onOrderUpdated(Order order) {
+        runOnUiThread(this::loadActiveOrders);
+    }
+
+    @Override
+    public void onOrderStatusChanged(Order order) {
+        runOnUiThread(this::loadActiveOrders);
+    }
+
+    @Override
+    public void onOrdersUpdated() {
+        runOnUiThread(this::loadActiveOrders);
+    }
+
+    private void loadActiveOrders() {
+        List<Order> activeOrders = orderManager.getActiveOrders();
+        filterOrdersByStatus(currentStatusFilter);
+        Log.d(TAG, "Active orders loaded: " + activeOrders.size());
     }
 }

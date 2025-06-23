@@ -37,21 +37,19 @@ public abstract class BaseActivity extends AppCompatActivity {
      */
     private boolean handleBottomNavigation(android.view.MenuItem item) {
         int itemId = item.getItemId();
-        
-        if (itemId == R.id.nav_home) {
+        if (itemId == R.id.nav_order) {
             navigateToActivity(MainActivity.class);
             return true;
-        } else if (itemId == R.id.nav_tables) {
+        } else if (itemId == R.id.nav_list) {
             navigateToActivity(TableSelectionActivity.class);
             return true;
-        } else if (itemId == R.id.nav_orders || itemId == R.id.nav_cart) {
+        } else if (itemId == R.id.nav_cart) {
             navigateToActivity(Cart.class);
             return true;
         } else if (itemId == R.id.nav_profile) {
             navigateToActivity(Profile.class);
             return true;
         }
-        
         return false;
     }
     
