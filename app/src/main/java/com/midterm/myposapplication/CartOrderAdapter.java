@@ -84,15 +84,8 @@ public class CartOrderAdapter extends RecyclerView.Adapter<CartOrderAdapter.Cart
     private Drawable getStatusBackground(Order.OrderStatus status) {
         int drawableRes;
         switch (status) {
-            case READY:
-                drawableRes = R.drawable.status_badge_ready;
-                break;
-            case SERVING:
+            case ON_SERVICE:
                 drawableRes = R.drawable.status_serving_background;
-                break;
-            case COMPLETED:
-            case PAID: // Trạng thái PAID và COMPLETED có thể dùng chung màu
-                drawableRes = R.drawable.status_complete_background;
                 break;
             case PREPARING:
             default:
@@ -103,7 +96,6 @@ public class CartOrderAdapter extends RecyclerView.Adapter<CartOrderAdapter.Cart
     }
 
     /**
-     * SỬA LỖI: Thêm phương thức getPaymentStatusBackground
      * Lấy drawable background tương ứng với trạng thái thanh toán.
      */
     private Drawable getPaymentStatusBackground(Order.PaymentStatus status) {
@@ -112,10 +104,7 @@ public class CartOrderAdapter extends RecyclerView.Adapter<CartOrderAdapter.Cart
             case PAID:
                 drawableRes = R.drawable.status_paid_background;
                 break;
-            case PROCESSING:
-                drawableRes = R.drawable.status_complete_background;
-                break;
-            case PENDING:
+            case WAITING:
             default:
                 drawableRes = R.drawable.status_pending_background;
                 break;

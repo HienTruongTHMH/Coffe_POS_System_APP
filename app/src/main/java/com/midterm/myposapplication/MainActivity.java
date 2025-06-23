@@ -122,7 +122,6 @@ public class MainActivity extends AppCompatActivity
         // Status filter tabs
         tabAll = findViewById(R.id.tab_all);
         tabPreparing = findViewById(R.id.tab_preparing);
-        tabReady = findViewById(R.id.tab_ready);
         tabServing = findViewById(R.id.tab_serving);
     }
 
@@ -177,16 +176,10 @@ public class MainActivity extends AppCompatActivity
             filterOrdersByStatus("preparing");
         });
 
-        tabReady.setOnClickListener(v -> {
-            currentStatusFilter = "ready";
-            updateStatusFilterSelection();
-            filterOrdersByStatus("ready");
-        });
-
         tabServing.setOnClickListener(v -> {
-            currentStatusFilter = "serving";
+            currentStatusFilter = "on_service"; // Thay đổi từ "serving" thành "on_service"
             updateStatusFilterSelection();
-            filterOrdersByStatus("serving");
+            filterOrdersByStatus("on_service");
         });
     }
 
@@ -210,14 +203,11 @@ public class MainActivity extends AppCompatActivity
 
     private Order.OrderStatus getOrderStatusFromString(String status) {
         switch (status) {
+            case "on_service":
+                return Order.OrderStatus.ON_SERVICE;
             case "preparing":
-                return Order.OrderStatus.PREPARING;
-            case "ready":
-                return Order.OrderStatus.READY;
-            case "serving":
-                return Order.OrderStatus.SERVING;
             default:
-                return null;
+                return Order.OrderStatus.PREPARING;
         }
     }
 
@@ -225,8 +215,8 @@ public class MainActivity extends AppCompatActivity
         // Reset all tabs
         resetTabStyle(tabAll);
         resetTabStyle(tabPreparing);
-        resetTabStyle(tabReady);
         resetTabStyle(tabServing);
+        // XÓA BỎ: resetTabStyle(tabReady);
         
         // Set selected tab
         switch (currentStatusFilter) {
@@ -236,10 +226,7 @@ public class MainActivity extends AppCompatActivity
             case "preparing":
                 setSelectedTabStyle(tabPreparing);
                 break;
-            case "ready":
-                setSelectedTabStyle(tabReady);
-                break;
-            case "serving":
+            case "on_service": // Thay đổi từ "serving"/"ready" thành "on_service"
                 setSelectedTabStyle(tabServing);
                 break;
         }

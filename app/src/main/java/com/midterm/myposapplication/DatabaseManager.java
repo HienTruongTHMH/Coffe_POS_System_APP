@@ -243,7 +243,7 @@ public class DatabaseManager {
         Order order2 = new Order("5", "Bàn 5", "Staff B");
         order2.addItem(new OrderItem("6", "Green Tea", 3.00, 2, "M", R.drawable.placeholder_drink));
         order2.addItem(new OrderItem("9", "Iced Coffee", 4.25, 1, "L", R.drawable.placeholder_drink));
-        order2.updateOrderStatus(Order.OrderStatus.READY);
+        order2.updateOrderStatus(Order.OrderStatus.ON_SERVICE);
         order2.setOrderNumber("#2102");
         orders.add(order2);
         orderMap.put(order2.getOrderId(), order2);
@@ -253,7 +253,7 @@ public class DatabaseManager {
         Order order3 = new Order("8", "Bàn 8", "Staff C");
         order3.addItem(new OrderItem("3", "Cappuccino", 4.50, 1, "M", R.drawable.placeholder_drink));
         order3.addItem(new OrderItem("12", "Hot Chocolate", 4.75, 2, "L", R.drawable.placeholder_drink));
-        order3.updateOrderStatus(Order.OrderStatus.SERVING);
+        order3.updateOrderStatus(Order.OrderStatus.PREPARING);
         order3.setOrderNumber("#2103");
         orders.add(order3);
         orderMap.put(order3.getOrderId(), order3);

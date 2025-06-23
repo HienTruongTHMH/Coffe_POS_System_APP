@@ -83,33 +83,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <LinearLayout
-            android:id="@+id/status_filter_container"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingHorizontal="20dp">
+        <include layout="@layout/status_filter_container" />
 
-            <TextView
-                android:id="@+id/tab_all"
-                style="@style/FilterTab.Selected"
-                android:text="All" />
-
-            <TextView
-                android:id="@+id/tab_preparing"
-                style="@style/FilterTab.Unselected"
-                android:text="Preparing" />
-
-            <TextView
-                android:id="@+id/tab_ready"
-                style="@style/FilterTab.Unselected"
-                android:text="Ready" />
-
-            <TextView
-                android:id="@+id/tab_serving"
-                style="@style/FilterTab.Unselected"
-                android:text="Serving" />
-        </LinearLayout>
     </HorizontalScrollView>
 
     <androidx.recyclerview.widget.RecyclerView

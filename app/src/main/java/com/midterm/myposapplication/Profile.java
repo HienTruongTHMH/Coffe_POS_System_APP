@@ -7,6 +7,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class Profile extends AppCompatActivity {
 
@@ -32,6 +33,7 @@ public class Profile extends AppCompatActivity {
 
         // Thiết lập sự kiện click
         setupClickListeners();
+        setupBottomNavigation(); // ✅ THÊM DÒNG NÀY
     }
 
     private void initializeViews() {
@@ -93,5 +95,35 @@ public class Profile extends AppCompatActivity {
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
+    }
+
+    private void setupBottomNavigation() {
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_bar);
+        // Đánh dấu tab Profile là đã chọn
+        bottomNavigationView.setSelectedItemId(R.id.nav_profile);
+        
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            
+            // ✅ SỬA LỖI: Thay cấu trúc switch-case bằng if-else if
+            if (itemId == R.id.nav_order) {
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
+                return true;
+            } else if (itemId == R.id.nav_list) {
+                startActivity(new Intent(this, TableSelectionActivity.class));
+                finish();
+                return true;
+            } else if (itemId == R.id.nav_cart) {
+                startActivity(new Intent(this, Cart.class));
+                finish();
+                return true;
+            } else if (itemId == R.id.nav_profile) {
+                // Đã ở Profile nên không làm gì
+                return true;
+            }
+            
+            return false;
+        });
     }
 }

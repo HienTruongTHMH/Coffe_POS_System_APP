@@ -48,12 +48,11 @@ public class PaymentActivity extends AppCompatActivity {
         initializeViews();
         
         // Lấy thông tin đơn hàng từ intent
-        String orderId = getIntent().getStringExtra("ORDER_ID");
-        
+        String orderId = getIntent().getStringExtra("order_id");
         if (orderId == null || orderId.isEmpty()) {
-            Log.e(TAG, "No order ID provided in intent");
-            Toast.makeText(this, "Lỗi: Không tìm thấy thông tin đơn hàng", Toast.LENGTH_LONG).show();
-            finish();
+            Log.e("PaymentActivity", "No order ID provided in intent");
+            Toast.makeText(this, "Không thể xử lý thanh toán: Thiếu thông tin đơn hàng", Toast.LENGTH_SHORT).show();
+            finish(); // Quay lại màn hình trước
             return;
         }
         
@@ -186,8 +185,8 @@ public class PaymentActivity extends AppCompatActivity {
             currentOrder.updatePaymentStatus(status);
             currentOrder.setPaymentMethod(paymentMethod);
             
-            // Đồng thời đánh dấu đơn hàng là đã hoàn thành
-            currentOrder.updateOrderStatus(Order.OrderStatus.COMPLETED);
+            // Không còn cần đánh dấu đơn hàng là COMPLETED vì không còn trạng thái này
+            // Thay vào đó, chỉ cần đánh dấu là đã thanh toán
             
             // Cập nhật trong database
             databaseManager.updateOrder(currentOrder);
