@@ -28,21 +28,23 @@ public class Order {
     
     // Order status enum
     public enum OrderStatus {
-        PREPARING("preparing", "Đang làm"),
-        READY("ready", "Sẵn sàng"),
-        SERVING("serving", "Đang phục vụ"),
-        COMPLETED("completed", "Hoàn thành");
+        PREPARING("Đang chuẩn bị"),
+        READY("Sẵn sàng"),
+        SERVING("Đang phục vụ"),
+        PAID("Đã thanh toán"), // ✅ FIXED: Thêm trạng thái PAID
+
+        COMPLETED("Hoàn thành");
+
         
-        private final String code;
         private final String displayName;
         
-        OrderStatus(String code, String displayName) {
-            this.code = code;
+        OrderStatus(String displayName) {
             this.displayName = displayName;
         }
         
-        public String getCode() { return code; }
-        public String getDisplayName() { return displayName; }
+        public String getDisplayName() {
+            return displayName;
+        }
     }
     
     // Payment status enum

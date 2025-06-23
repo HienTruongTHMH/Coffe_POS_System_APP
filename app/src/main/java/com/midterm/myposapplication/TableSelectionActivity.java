@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TableSelectionActivity extends AppCompatActivity 
-    implements OnTableClickListener, OrderStatusAdapter.OnOrderClickListener, OrderDataManager.OrderDataListener {
+    implements OnTableClickListener, OrderStatusAdapter.OnOrderClickListener, OrderManager.OrderListener {
 
     private static final String TAG = "TableSelectionActivity";
 
@@ -45,75 +45,90 @@ public class TableSelectionActivity extends AppCompatActivity
     private String selectedDrinkSize;
     private int selectedDrinkImage;
 
-    // Data Manager
-    private OrderDataManager orderDataManager;
+    // ✅ Replace with new managers
+    private OrderManager orderManager;
+    private DatabaseManager databaseManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.order_table_screen);
 
-        // Initialize data manager and register listener
-        orderDataManager = OrderDataManager.getInstance();
-        orderDataManager.addListener(this);
+        // ✅ Initialize managers and register listener
+        orderManager = OrderManager.getInstance();
+        databaseManager = DatabaseManager.getInstance();
+        orderManager.addListener(this);
 
         initializeViews();
         getDrinkInformation();
         setupTableData();
         setupRecyclerViews();
-        setupStatusFilterTabs(); // ✅ Add this method
+        setupStatusFilterTabs();
         setupOrderStatus();
         setupBottomNavigation();
+        
+        Log.d(TAG, "TableSelectionActivity initialized successfully");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (orderDataManager != null) {
-            orderDataManager.removeListener(this);
+        if (orderManager != null) {
+            orderManager.removeListener(this);
         }
     }
 
-    // ✅ OrderDataListener implementation
+    // ✅ OrderManager.OrderListener implementation
     @Override
     public void onOrdersUpdated(List<Order> orders) {
         ordersList = orders;
         if (orderStatusAdapter != null) {
             orderStatusAdapter.updateOrders(orders);
         }
+        // ✅ FIXED: Refresh table adapters when orders change
         refreshTableAdapters();
+        Log.d(TAG, "Orders updated: " + orders.size() + " total orders");
     }
 
     @Override
     public void onOrderStatusChanged(Order order) {
         if (orderStatusAdapter != null) {
-            int index = ordersList.indexOf(order);
-            if (index != -1) {
-                orderStatusAdapter.notifyItemChanged(index);
-            } else {
-                orderStatusAdapter.notifyDataSetChanged();
-            }
+            orderStatusAdapter.notifyDataSetChanged();
         }
+        // ✅ FIXED: Refresh table adapters when order status changes
         refreshTableAdapters();
+        Log.d(TAG, "Order status changed: " + order.getOrderNumber());
     }
 
     @Override
     public void onOrderAdded(Order order) {
-        // Handle new order if needed
+        // ✅ FIXED: Refresh table adapters when new order is added
+        refreshTableAdapters();
+        if (orderStatusAdapter != null) {
+            orderStatusAdapter.notifyDataSetChanged();
+        }
+        Log.d(TAG, "Order added: " + order.getOrderNumber());
     }
 
     @Override
     public void onOrderRemoved(String orderId) {
-        // Handle order removal if needed
+        // ✅ FIXED: Refresh table adapters when order is removed
+        refreshTableAdapters();
+        if (orderStatusAdapter != null) {
+            orderStatusAdapter.notifyDataSetChanged();
+        }
+        Log.d(TAG, "Order removed: " + orderId);
     }
 
+    // ✅ FIXED: Improved refresh method
     private void refreshTableAdapters() {
         if (insideTableAdapter != null) {
-            insideTableAdapter.notifyDataSetChanged();
+            insideTableAdapter.refreshData();
         }
         if (outsideTableAdapter != null) {
-            outsideTableAdapter.notifyDataSetChanged();
+            outsideTableAdapter.refreshData();
         }
+        Log.d(TAG, "Table adapters refreshed");
     }
 
     private void initializeViews() {
@@ -128,7 +143,7 @@ public class TableSelectionActivity extends AppCompatActivity
         tabServing = findViewById(R.id.tab_serving);
         
         // ✅ Log to debug which views are found
-        android.util.Log.d(TAG, "Tab views initialized: all=" + (tabAll != null) + 
+        Log.d(TAG, "Tab views initialized: all=" + (tabAll != null) + 
             ", preparing=" + (tabPreparing != null) + 
             ", ready=" + (tabReady != null) + 
             ", serving=" + (tabServing != null));
@@ -141,11 +156,16 @@ public class TableSelectionActivity extends AppCompatActivity
         selectedDrinkPrice = intent.getDoubleExtra("SELECTED_DRINK_PRICE", 0);
         selectedDrinkSize = intent.getStringExtra("SELECTED_DRINK_SIZE");
         selectedDrinkImage = intent.getIntExtra("SELECTED_DRINK_IMAGE", R.drawable.placeholder_drink);
+        
+        Log.d(TAG, "Drink information: " + selectedDrinkName + " - $" + selectedDrinkPrice);
     }
 
     private void setupTableData() {
-        insideTables = Local_Database_Staff.getInstance().getInsideTables();
-        outsideTables = Local_Database_Staff.getInstance().getOutsideTables();
+        // ✅ Use DatabaseManager instead of Local_Database_Staff
+        insideTables = databaseManager.getInsideTables();
+        outsideTables = databaseManager.getOutsideTables();
+        
+        Log.d(TAG, "Table data setup: " + insideTables.size() + " inside, " + outsideTables.size() + " outside");
     }
 
     private void setupRecyclerViews() {
@@ -160,6 +180,8 @@ public class TableSelectionActivity extends AppCompatActivity
             outsideTablesRecycler.setLayoutManager(new GridLayoutManager(this, 2));
             outsideTablesRecycler.setAdapter(outsideTableAdapter);
         }
+        
+        Log.d(TAG, "RecyclerViews setup completed");
     }
 
     // ✅ Add method to setup filter tabs
@@ -176,20 +198,22 @@ public class TableSelectionActivity extends AppCompatActivity
         if (tabServing != null) {
             tabServing.setOnClickListener(v -> filterOrdersByStatus("serving"));
         }
+        
+        Log.d(TAG, "Status filter tabs setup completed");
     }
 
-    // ✅ Add method to filter orders
+    // ✅ Add method to filter orders using OrderManager
     private void filterOrdersByStatus(String status) {
         currentStatusFilter = status;
         updateStatusFilterSelection();
 
         List<Order> filteredList;
         if ("all".equals(status)) {
-            filteredList = orderDataManager.getAllActiveOrders();
+            filteredList = orderManager.getActiveOrders();
         } else {
             Order.OrderStatus targetStatus = getOrderStatusFromString(status);
             if (targetStatus != null) {
-                filteredList = orderDataManager.getOrdersByStatus(targetStatus);
+                filteredList = orderManager.getOrdersByStatus(targetStatus);
             } else {
                 filteredList = new ArrayList<>();
             }
@@ -198,6 +222,8 @@ public class TableSelectionActivity extends AppCompatActivity
         if (orderStatusAdapter != null) {
             orderStatusAdapter.updateOrders(filteredList);
         }
+        
+        Log.d(TAG, "Filtered orders by status '" + status + "': " + filteredList.size() + " orders");
     }
 
     // ✅ Add helper to convert string to enum
@@ -253,8 +279,8 @@ public class TableSelectionActivity extends AppCompatActivity
 
     private void setupOrderStatus() {
         if (orderStatusRecycler != null) {
-            // ✅ Initially load all active orders
-            ordersList = orderDataManager.getAllActiveOrders();
+            // ✅ Initially load all active orders using OrderManager
+            ordersList = orderManager.getActiveOrders();
             
             orderStatusAdapter = new OrderStatusAdapter(ordersList, this);
             orderStatusRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -309,11 +335,15 @@ public class TableSelectionActivity extends AppCompatActivity
     @Override
     public void onOrderClick(Order order) {
         Toast.makeText(this, "Clicked Order: " + order.getOrderNumber(), Toast.LENGTH_SHORT).show();
-        // Add detail logic if needed
+        Log.d(TAG, "Order clicked: " + order.getOrderNumber());
     }
     
     private void showOrderConfirmationDialog(Table table) {
-        if (!table.isAvailable()) {
+        // ✅ Check if table has active orders using OrderManager
+        List<Order> activeOrders = orderManager.getActiveOrdersByTable(table.getNumber());
+        boolean hasActiveOrders = !activeOrders.isEmpty();
+        
+        if (hasActiveOrders) {
             new AlertDialog.Builder(this)
                 .setTitle("Table Occupied")
                 .setMessage("Table " + table.getName() + " is occupied. Do you want to add order to this table?")
@@ -354,6 +384,7 @@ public class TableSelectionActivity extends AppCompatActivity
 
             setResult(RESULT_OK, resultIntent);
             Toast.makeText(this, "Added " + selectedDrinkName + " to " + table.getName(), Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "Order confirmed for table " + table.getName());
             finish();
         });
 
@@ -367,6 +398,7 @@ public class TableSelectionActivity extends AppCompatActivity
         resultIntent.putExtra("SELECTED_TABLE_NAME", table.getName());
         resultIntent.putExtra("MODE", "TABLE_SELECTED");
         
+        Log.d(TAG, "Table selected for new order: " + table.getName());
         startActivity(resultIntent);
         finish();
     }

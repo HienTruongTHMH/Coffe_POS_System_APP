@@ -2,6 +2,7 @@ package com.midterm.myposapplication;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,8 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Cart extends AppCompatActivity 
-    implements OrderAdapter.OnOrderClickListener, OrderDataManager.OrderDataListener {
+    implements OrderAdapter.OnOrderClickListener, OrderManager.OrderListener {
 
+    private static final String TAG = "Cart";
+    
     private RecyclerView ordersRecyclerView;
     private TextView totalOrdersCount;
     private OrderAdapter orderAdapter;
@@ -27,8 +30,9 @@ public class Cart extends AppCompatActivity
     // Filter tabs
     private TextView btnAll, btnPreparing, btnReady, btnServing, btnCompleted;
 
-    // ✅ Data Manager
-    private OrderDataManager orderDataManager;
+    // ✅ Replace with new managers
+    private OrderManager orderManager;
+    private DatabaseManager databaseManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,9 +45,10 @@ public class Cart extends AppCompatActivity
             return insets;
         });
 
-        // ✅ Initialize data manager and register listener
-        orderDataManager = OrderDataManager.getInstance();
-        orderDataManager.addListener(this);
+        // ✅ Initialize managers and register listener
+        orderManager = OrderManager.getInstance();
+        databaseManager = DatabaseManager.getInstance();
+        orderManager.addListener(this);
 
         initializeViews();
         setupOrdersData();
@@ -51,22 +56,25 @@ public class Cart extends AppCompatActivity
         setupFilterTabs();
         setupBottomNavigation();
         updateOrderCount();
+        
+        Log.d(TAG, "Cart activity initialized successfully");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         // ✅ Unregister listener to prevent memory leaks
-        if (orderDataManager != null) {
-            orderDataManager.removeListener(this);
+        if (orderManager != null) {
+            orderManager.removeListener(this);
         }
     }
 
-    // ✅ OrderDataListener implementation
+    // ✅ OrderManager.OrderListener implementation
     @Override
     public void onOrdersUpdated(List<Order> orders) {
         allOrders = orders;
         filterOrders(currentFilter); // Re-apply current filter
+        Log.d(TAG, "Orders updated: " + orders.size() + " total orders");
     }
 
     @Override
@@ -74,50 +82,84 @@ public class Cart extends AppCompatActivity
         if (orderAdapter != null) {
             orderAdapter.notifyDataSetChanged();
         }
+        Log.d(TAG, "Order status changed: " + order.getOrderNumber());
     }
 
     @Override
     public void onOrderAdded(Order order) {
         // Update count display
         updateOrderCount();
+        Log.d(TAG, "Order added: " + order.getOrderNumber());
     }
 
     @Override
     public void onOrderRemoved(String orderId) {
         // Update count display
         updateOrderCount();
+        Log.d(TAG, "Order removed: " + orderId);
     }
 
     private void initializeViews() {
         ordersRecyclerView = findViewById(R.id.orders_recycler_view);
         totalOrdersCount = findViewById(R.id.total_orders_count);
-        
-        // Filter tabs
-        btnAll = findViewById(R.id.btn_all);
-        btnPreparing = findViewById(R.id.btn_preparing);
-        btnReady = findViewById(R.id.btn_preparing);
-        btnServing = findViewById(R.id.btn_serving);
+
+        // ✅ FIXED: Try different ID variations for filter tabs
+        btnAll = findViewById(R.id.tab_all);
+        if (btnAll == null) btnAll = findViewById(R.id.btn_all);
+
+        btnPreparing = findViewById(R.id.tab_preparing);
+        if (btnPreparing == null) btnPreparing = findViewById(R.id.btn_preparing);
+
+        btnReady = findViewById(R.id.tab_ready);
+//        if (btnReady == null) btnReady = findViewById(R.id.btn_ready);
+
+        btnServing = findViewById(R.id.tab_serving);
+        if (btnServing == null) btnServing = findViewById(R.id.btn_serving);
+
         btnCompleted = findViewById(R.id.btn_completed);
+        if (btnCompleted == null) btnCompleted = findViewById(R.id.btn_completed);
+
+        // ✅ Log which views were found for debugging
+        Log.d(TAG, "Filter tabs found - " +
+                "all: " + (btnAll != null) +
+                ", preparing: " + (btnPreparing != null) +
+                ", ready: " + (btnReady != null) +
+                ", serving: " + (btnServing != null) +
+                ", completed: " + (btnCompleted != null));
     }
 
     private void setupOrdersData() {
-        // ✅ Use OrderDataManager instead of Local_Database_Staff directly
-        allOrders = orderDataManager.getAllOrders();
+        // ✅ Use OrderManager instead of Local_Database_Staff directly
+        allOrders = orderManager.getAllOrders();
         filteredOrders = new ArrayList<>(allOrders);
+        Log.d(TAG, "Orders data setup: " + allOrders.size() + " total orders");
     }
 
     private void setupRecyclerView() {
         orderAdapter = new OrderAdapter(filteredOrders, this);
         ordersRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         ordersRecyclerView.setAdapter(orderAdapter);
+        Log.d(TAG, "RecyclerView setup completed");
     }
 
     private void setupFilterTabs() {
-        btnAll.setOnClickListener(v -> filterOrders("all"));
-        btnPreparing.setOnClickListener(v -> filterOrders("preparing"));
-        btnReady.setOnClickListener(v -> filterOrders("ready"));
-        btnServing.setOnClickListener(v -> filterOrders("serving"));
-        btnCompleted.setOnClickListener(v -> filterOrders("completed"));
+        if (btnAll != null) {
+            btnAll.setOnClickListener(v -> filterOrders("all"));
+        }
+        if (btnPreparing != null) {
+            btnPreparing.setOnClickListener(v -> filterOrders("preparing"));
+        }
+        if (btnReady != null) {
+            btnReady.setOnClickListener(v -> filterOrders("ready"));
+        }
+        if (btnServing != null) {
+            btnServing.setOnClickListener(v -> filterOrders("serving"));
+        }
+        if (btnCompleted != null) {
+            btnCompleted.setOnClickListener(v -> filterOrders("completed"));
+        }
+        
+        Log.d(TAG, "Filter tabs setup completed");
     }
 
     private void filterOrders(String filter) {
@@ -127,13 +169,17 @@ public class Cart extends AppCompatActivity
         if ("all".equals(filter)) {
             filteredOrders = new ArrayList<>(allOrders);
         } else {
-            // ✅ Use OrderDataManager for consistent filtering
+            // ✅ Use OrderManager for consistent filtering
             Order.OrderStatus targetStatus = getOrderStatusFromString(filter);
-            filteredOrders = orderDataManager.getOrdersByStatus(targetStatus);
+            filteredOrders = orderManager.getOrdersByStatus(targetStatus);
         }
         
-        orderAdapter.updateOrders(filteredOrders);
+        if (orderAdapter != null) {
+            orderAdapter.updateOrders(filteredOrders);
+        }
         updateOrderCount();
+        
+        Log.d(TAG, "Filtered orders by '" + filter + "': " + filteredOrders.size() + " orders");
     }
 
     private Order.OrderStatus getOrderStatusFromString(String status) {
@@ -178,63 +224,80 @@ public class Cart extends AppCompatActivity
     }
 
     private void setSelectedTabStyle(TextView tab) {
-        tab.setBackground(getResources().getDrawable(R.drawable.tab_rounded_selected));
-        tab.setTextColor(getResources().getColor(R.color.white));
+        if (tab != null) {
+            tab.setBackground(getResources().getDrawable(R.drawable.tab_rounded_selected));
+            tab.setTextColor(getResources().getColor(R.color.white));
+        }
     }
 
     private void resetTabStyle(TextView tab) {
-        tab.setBackground(getResources().getDrawable(R.drawable.tab_rounded_unselected));
-        tab.setTextColor(getResources().getColor(R.color.text_primary));
+        if (tab != null) {
+            tab.setBackground(getResources().getDrawable(R.drawable.tab_rounded_unselected));
+            tab.setTextColor(getResources().getColor(R.color.text_primary));
+        }
     }
 
     private void updateOrderCount() {
-        totalOrdersCount.setText(filteredOrders.size() + " Orders");
+        if (totalOrdersCount != null && filteredOrders != null) {
+            totalOrdersCount.setText(filteredOrders.size() + " Orders");
+        }
     }
 
     private void setupBottomNavigation() {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_bar);
-        bottomNavigationView.setSelectedItemId(R.id.nav_cart);
-        
-        bottomNavigationView.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setSelectedItemId(R.id.nav_cart);
             
-            if (itemId == R.id.nav_order) {
-                Intent intent = new Intent(Cart.this, MainActivity.class);
-                startActivity(intent);
-                finish();
-                return true;
-            } else if (itemId == R.id.nav_list) {
-                Intent intent = new Intent(Cart.this, TableSelectionActivity.class);
-                startActivity(intent);
-                finish();
-                return true;
-            } else if (itemId == R.id.nav_cart) {
-                return true;
-            } else if (itemId == R.id.nav_package) {
-                Toast.makeText(this, "Package feature coming soon", Toast.LENGTH_SHORT).show();
-                return true;
-            } else if (itemId == R.id.nav_profile) {
-                Toast.makeText(this, "Profile feature coming soon", Toast.LENGTH_SHORT).show();
-                return true;
-            }
-            return false;
-        });
+            bottomNavigationView.setOnItemSelectedListener(item -> {
+                int itemId = item.getItemId();
+                
+                if (itemId == R.id.nav_order) {
+                    Intent intent = new Intent(Cart.this, MainActivity.class);
+                    startActivity(intent);
+                    finish();
+                    return true;
+                } else if (itemId == R.id.nav_list) {
+                    Intent intent = new Intent(Cart.this, TableSelectionActivity.class);
+                    startActivity(intent);
+                    finish();
+                    return true;
+                } else if (itemId == R.id.nav_cart) {
+                    return true;
+                } else if (itemId == R.id.nav_package) {
+                    Toast.makeText(this, "Package feature coming soon", Toast.LENGTH_SHORT).show();
+                    return true;
+                } else if (itemId == R.id.nav_profile) {
+                    Toast.makeText(this, "Profile feature coming soon", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                return false;
+            });
+        }
     }
 
     @Override
     public void onOrderClick(Order order) {
         Toast.makeText(this, "Order details: " + order.getOrderNumber(), Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "Order clicked: " + order.getOrderNumber());
     }
 
     @Override
     public void onOrderStatusUpdate(Order order, Order.OrderStatus newStatus) {
-        // ✅ Use OrderDataManager for consistent updates
-        orderDataManager.updateOrderStatus(order, newStatus);
+        // ✅ Use OrderManager for consistent updates
+        orderManager.updateOrderStatus(order.getOrderId(), newStatus);
+        Log.d(TAG, "Order status updated: " + order.getOrderNumber() + " -> " + newStatus.getDisplayName());
     }
 
     @Override
     public void onPaymentStatusUpdate(Order order, Order.PaymentStatus newStatus) {
-        // ✅ Use OrderDataManager for consistent updates
-        orderDataManager.updatePaymentStatus(order, newStatus);
+        // ✅ Update payment status directly on order object
+        order.updatePaymentStatus(newStatus);
+        databaseManager.updateOrder(order);
+        
+        if (orderAdapter != null) {
+            orderAdapter.notifyDataSetChanged();
+        }
+        
+        Log.d(TAG, "Payment status updated: " + order.getOrderNumber() + " -> " + newStatus.getDisplayName());
     }
 }
