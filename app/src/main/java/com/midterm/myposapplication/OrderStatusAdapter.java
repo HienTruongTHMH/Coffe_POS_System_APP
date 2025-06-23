@@ -2,97 +2,90 @@ package com.midterm.myposapplication;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
+import com.midterm.myposapplication.utils.FormatUtils;
 import java.util.List;
 
-public class OrderStatusAdapter extends RecyclerView.Adapter<OrderStatusAdapter.OrderStatusViewHolder> {
+public class OrderStatusAdapter extends RecyclerView.Adapter<OrderStatusAdapter.OrderViewHolder> {
 
-    private List<Order> orderList;
-    private OnOrderClickListener listener;
+    private List<Order> orders;
     private Context context;
 
-    public interface OnOrderClickListener {
-        void onOrderClick(Order order);
+    // ✅ FIXED: Constructor now only takes a Context. Data is updated via a method.
+    public OrderStatusAdapter(Context context) {
+        this.context = context;
     }
 
-    public OrderStatusAdapter(List<Order> orderList, OnOrderClickListener listener) {
-        this.orderList = orderList;
-        this.listener = listener;
+    public void updateOrders(List<Order> newOrders) {
+        this.orders = newOrders;
+        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
-    public OrderStatusViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        this.context = parent.getContext();
-        // ✅ Inflate đúng layout item_order_status
-        View view = LayoutInflater.from(context).inflate(R.layout.item_order_status, parent, false);
-        return new OrderStatusViewHolder(view);
+    public OrderViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        // Context is already available, no need to get it here
+        View view = LayoutInflater.from(context)
+                .inflate(R.layout.item_order_status, parent, false);
+        return new OrderViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull OrderStatusViewHolder holder, int position) {
-        Order order = orderList.get(position);
-        holder.bind(order);
-
-        // ✅ FIXED: Open OrderDetailActivity on click
-        holder.itemView.setOnClickListener(v -> {
-            Context context = holder.itemView.getContext();
-            Intent intent = new Intent(context, OrderDetailActivity.class);
-            intent.putExtra(OrderDetailActivity.EXTRA_ORDER_ID, order.getOrderNumber());
-            context.startActivity(intent);
-        });
+    public void onBindViewHolder(@NonNull OrderViewHolder holder, int position) {
+        if (orders == null) return;
+        Order order = orders.get(position);
+        holder.bind(order, context);
     }
 
     @Override
     public int getItemCount() {
-        return orderList != null ? orderList.size() : 0;
-    }
-    
-    public void updateOrders(List<Order> newOrders) {
-        this.orderList = newOrders;
-        notifyDataSetChanged();
+        return orders != null ? orders.size() : 0;
     }
 
-    class OrderStatusViewHolder extends RecyclerView.ViewHolder {
-        TextView orderNumber, statusBadge, tableName, itemCount;
+    // ✅ FIXED: ViewHolder now matches item_order_status.xml
+    static class OrderViewHolder extends RecyclerView.ViewHolder {
+        TextView orderNumberTextView;
+        TextView statusBadgeTextView;
+        TextView tableNameTextView;
+        TextView orderCountTextView;
 
-        public OrderStatusViewHolder(@NonNull View itemView) {
+        public OrderViewHolder(@NonNull View itemView) {
             super(itemView);
-            orderNumber = itemView.findViewById(R.id.order_number);
-            statusBadge = itemView.findViewById(R.id.status_badge);
-            tableName = itemView.findViewById(R.id.table_name);
-            itemCount = itemView.findViewById(R.id.order_count);
+            // ✅ FIXED: IDs now match the XML file
+            orderNumberTextView = itemView.findViewById(R.id.order_number);
+            statusBadgeTextView = itemView.findViewById(R.id.status_badge);
+            tableNameTextView = itemView.findViewById(R.id.table_name);
+            orderCountTextView = itemView.findViewById(R.id.order_count);
         }
 
-        public void bind(final Order order) {
-            orderNumber.setText(order.getOrderNumber());
-            tableName.setText(order.getTableName());
-            itemCount.setText(order.getItems().size() + " món");
-            
-            // Set status badge
-            statusBadge.setText(order.getOrderStatus().getDisplayName());
-            statusBadge.setBackground(getStatusBackground(order.getOrderStatus()));
-        }
-        
-        private Drawable getStatusBackground(Order.OrderStatus status) {
-            int drawableRes;
-            switch (status) {
-                case ON_SERVICE:
-                    drawableRes = R.drawable.status_badge_serving;
-                    break;
-                case PREPARING:
-                default:
-                    drawableRes = R.drawable.status_badge_preparing;
-                    break;
+        public void bind(Order order, Context context) {
+            // ✅ FIXED: Use FormatUtils and set text to the correct TextViews
+            orderNumberTextView.setText(FormatUtils.formatOrderNumber(context, order.getOrderNumber()));
+            tableNameTextView.setText(order.getTableName());
+
+            String itemCountText = order.getItems().size() + " items";
+            orderCountTextView.setText(itemCountText);
+
+            // Set status
+            if (order.getOrderStatus() == Order.OrderStatus.PREPARING) {
+                statusBadgeTextView.setText(R.string.status_preparing);
+                statusBadgeTextView.setBackgroundResource(R.drawable.status_badge_preparing);
+            } else {
+                statusBadgeTextView.setText(R.string.status_on_service);
+                statusBadgeTextView.setBackgroundResource(R.drawable.status_badge_serving);
             }
-            return ContextCompat.getDrawable(context, drawableRes);
+
+            // Click listener to open OrderDetailActivity
+            itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(context, OrderDetailActivity.class);
+                intent.putExtra(Constants.KEY_ORDER_ID, order.getOrderId());
+                context.startActivity(intent);
+            });
         }
     }
 }

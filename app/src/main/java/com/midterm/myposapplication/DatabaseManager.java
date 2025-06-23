@@ -52,7 +52,6 @@ public class DatabaseManager {
     // Order operations
     public String addOrder(Order order) {
         String orderNumber = "#" + orderCounter.incrementAndGet();
-        order.setOrderNumber(orderNumber);
         
         orders.add(order);
         orderMap.put(order.getOrderId(), order);
@@ -234,7 +233,6 @@ public class DatabaseManager {
         Order order1 = new Order("2", "Bàn 2", "Staff A");
         order1.addItem(new OrderItem("1", "Espresso", 3.50, 2, "M", R.drawable.placeholder_drink));
         order1.addItem(new OrderItem("4", "Latte", 5.00, 1, "L", R.drawable.placeholder_drink));
-        order1.setOrderNumber("#2101");
         orders.add(order1);
         orderMap.put(order1.getOrderId(), order1);
         updateTableStatus("2", "occupied");
@@ -244,7 +242,6 @@ public class DatabaseManager {
         order2.addItem(new OrderItem("6", "Green Tea", 3.00, 2, "M", R.drawable.placeholder_drink));
         order2.addItem(new OrderItem("9", "Iced Coffee", 4.25, 1, "L", R.drawable.placeholder_drink));
         order2.updateOrderStatus(Order.OrderStatus.ON_SERVICE);
-        order2.setOrderNumber("#2102");
         orders.add(order2);
         orderMap.put(order2.getOrderId(), order2);
         updateTableStatus("5", "occupied");
@@ -254,7 +251,6 @@ public class DatabaseManager {
         order3.addItem(new OrderItem("3", "Cappuccino", 4.50, 1, "M", R.drawable.placeholder_drink));
         order3.addItem(new OrderItem("12", "Hot Chocolate", 4.75, 2, "L", R.drawable.placeholder_drink));
         order3.updateOrderStatus(Order.OrderStatus.PREPARING);
-        order3.setOrderNumber("#2103");
         orders.add(order3);
         orderMap.put(order3.getOrderId(), order3);
         updateTableStatus("8", "occupied");

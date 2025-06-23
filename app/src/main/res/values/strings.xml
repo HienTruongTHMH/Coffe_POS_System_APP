@@ -61,4 +61,9 @@
     <string name="label_table_number">Table Number</string>
     <string name="label_order_items">Order Items</string>
     <string name="label_active_orders">Active Orders</string>
+
+    <string name="order_detail_title">Order Details</string>
+    <string name="label_subtotal">Subtotal</string>
+    <string name="label_discount">Discount</string>
+    <string name="label_total">Total</string>
 </resources>

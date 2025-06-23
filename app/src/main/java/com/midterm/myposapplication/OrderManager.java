@@ -3,27 +3,25 @@ package com.midterm.myposapplication;
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 public class OrderManager {
     
     private static final String TAG = "OrderManager";
     private static OrderManager instance;
-    private final CopyOnWriteArrayList<OrderListener> listeners;
-    private final DatabaseManager databaseManager;
+    private List<Order> orders;
+    private List<OrderListener> listeners;
     
     public interface OrderListener {
-        void onOrdersUpdated(List<Order> orders);
-        void onOrderAdded(Order order);
+        void onOrderCreated(Order order);
+        void onOrderUpdated(Order order);
         void onOrderStatusChanged(Order order);
-        void onOrderRemoved(String orderId);
+        void onOrdersUpdated();
     }
     
     private OrderManager() {
-        listeners = new CopyOnWriteArrayList<>();
-        databaseManager = DatabaseManager.getInstance();
-        Log.d(TAG, "OrderManager initialized");
+        this.orders = new ArrayList<>();
+        this.listeners = new ArrayList<>();
     }
     
     public static synchronized OrderManager getInstance() {
@@ -33,239 +31,159 @@ public class OrderManager {
         return instance;
     }
     
-    // Listener management
+    // ✅ FIXED: Order CRUD operations with proper return types
+    public String createOrder(Order order) {
+        orders.add(order);
+        notifyOrderCreated(order);
+        notifyOrdersUpdated();
+        Log.d(TAG, "Created order: " + order.getOrderId());
+        // ✅ Return order number for toast display
+        return order.getOrderNumber();
+    }
+    
+    public void updateOrder(Order order) {
+        int index = findOrderIndex(order.getOrderId());
+        if (index != -1) {
+            orders.set(index, order);
+            notifyOrderUpdated(order);
+            notifyOrdersUpdated();
+            Log.d(TAG, "Updated order: " + order.getOrderId());
+        }
+    }
+    
+    public Order getOrderById(String orderId) {
+        return orders.stream()
+                .filter(order -> order.getOrderId().equals(orderId))
+                .findFirst()
+                .orElse(null);
+    }
+    
+    public List<Order> getAllOrders() {
+        return new ArrayList<>(orders);
+    }
+    
+    // ✅ FIXED: Add getActiveOrders method for workflow
+    public List<Order> getActiveOrders() {
+        return orders.stream()
+                .filter(order -> order.getOrderStatus() == Order.OrderStatus.PREPARING || 
+                                order.getOrderStatus() == Order.OrderStatus.ON_SERVICE)
+                .collect(Collectors.toList());
+    }
+    
+    // ✅ FIXED: Add getActiveOrdersByTable method for table-specific orders
+    public List<Order> getActiveOrdersByTable(String tableNumber) {
+        return orders.stream()
+                .filter(order -> order.getTableNumber().equals(tableNumber))
+                .filter(order -> order.getOrderStatus() == Order.OrderStatus.PREPARING || 
+                                order.getOrderStatus() == Order.OrderStatus.ON_SERVICE)
+                .collect(Collectors.toList());
+    }
+    
+    // ✅ FIXED: Filter methods supporting both String and Enum
+    public List<Order> getOrdersByStatus(String statusFilter) {
+        switch (statusFilter) {
+            case Constants.FILTER_PREPARING:
+                return orders.stream()
+                        .filter(order -> order.getOrderStatus() == Order.OrderStatus.PREPARING)
+                        .collect(Collectors.toList());
+            case Constants.FILTER_ON_SERVICE:
+                return orders.stream()
+                        .filter(order -> order.getOrderStatus() == Order.OrderStatus.ON_SERVICE)
+                        .collect(Collectors.toList());
+            case Constants.FILTER_ALL:
+            default:
+                return getActiveOrders(); // Only active orders for main display
+        }
+    }
+    
+    // ✅ NEW: Overloaded method for enum parameter
+    public List<Order> getOrdersByStatus(Order.OrderStatus status) {
+        return orders.stream()
+                .filter(order -> order.getOrderStatus() == status)
+                .collect(Collectors.toList());
+    }
+    
+    public List<Order> getOrdersByPaymentStatus(Order.PaymentStatus paymentStatus) {
+        return orders.stream()
+                .filter(order -> order.getPaymentStatus() == paymentStatus)
+                .collect(Collectors.toList());
+    }
+    
+    public List<Order> getOrdersByTable(String tableNumber) {
+        return orders.stream()
+                .filter(order -> order.getTableNumber().equals(tableNumber))
+                .collect(Collectors.toList());
+    }
+    
+    // Status update methods
+    public void updateOrderStatus(String orderId, Order.OrderStatus newStatus) {
+        Order order = getOrderById(orderId);
+        if (order != null) {
+            order.updateOrderStatus(newStatus);
+            updateOrder(order);
+            notifyOrderStatusChanged(order);
+        }
+    }
+    
+    public void updatePaymentStatus(String orderId, Order.PaymentStatus newStatus) {
+        Order order = getOrderById(orderId);
+        if (order != null) {
+            order.updatePaymentStatus(newStatus);
+            updateOrder(order);
+        }
+    }
+    
+    // Helper methods
+    private int findOrderIndex(String orderId) {
+        for (int i = 0; i < orders.size(); i++) {
+            if (orders.get(i).getOrderId().equals(orderId)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    // ✅ FIXED: Listener management with correct method names
     public void addListener(OrderListener listener) {
         if (!listeners.contains(listener)) {
             listeners.add(listener);
-            Log.d(TAG, "Listener added. Total: " + listeners.size());
         }
+    }
+    
+    public void addOrderListener(OrderListener listener) {
+        addListener(listener); // Delegate to maintain compatibility
     }
     
     public void removeListener(OrderListener listener) {
         listeners.remove(listener);
-        Log.d(TAG, "Listener removed. Total: " + listeners.size());
     }
     
-    // Core operations
-    public String createOrder(Order order) {
-        Log.d(TAG, "Creating order for table: " + order.getTableName());
-        
-        String orderNumber = databaseManager.addOrder(order);
-        order.setOrderNumber(orderNumber);
-        
-        // Update table status
-        databaseManager.updateTableStatus(order.getTableNumber(), "occupied");
-        
-        // Notify listeners
-        notifyOrderAdded(order);
-        notifyOrdersUpdated();
-        
-        Log.d(TAG, "Order created successfully: " + orderNumber);
-        return orderNumber;
+    public void removeOrderListener(OrderListener listener) {
+        removeListener(listener); // Delegate to maintain compatibility
     }
     
-    public void updateOrderStatus(String orderId, Order.OrderStatus newStatus) {
-        Order order = databaseManager.getOrderById(orderId);
-        if (order != null) {
-            Log.d(TAG, "Updating order " + order.getOrderNumber() + " to " + newStatus.getDisplayName());
-            
-            order.updateOrderStatus(newStatus);
-            databaseManager.updateOrder(order);
-            
-            // Check if order is completed to free table
-            if (newStatus == Order.OrderStatus.ON_SERVICE) {
-                List<Order> tableOrders = getActiveOrdersByTable(order.getTableNumber());
-                if (tableOrders.isEmpty()) {
-                    databaseManager.updateTableStatus(order.getTableNumber(), "available");
-                }
-            }
-            
-            notifyOrderStatusChanged(order);
-            notifyOrdersUpdated();
-        }
-    }
-
-    // ✅ FIXED: Thêm phương thức xử lý thanh toán chuyên biệt
-    public void processPaymentForOrder(String orderId) {
-        Order order = databaseManager.getOrderById(orderId);
-        if (order != null) {
-            Log.d(TAG, "Processing payment for order: " + order.getOrderNumber());
-
-            // Cập nhật trạng thái thanh toán thành "Đã thanh toán"
-            order.updatePaymentStatus(Order.PaymentStatus.PAID);
-            
-            // Lưu thay đổi vào database
-            databaseManager.updateOrder(order);
-
-            // Giải phóng bàn nếu không còn đơn hàng nào khác
-            List<Order> remainingOrders = getActiveOrdersByTable(order.getTableNumber());
-            if (remainingOrders.isEmpty()) {
-                databaseManager.updateTableStatus(order.getTableNumber(), "available");
-            }
-
-            // Thông báo cho các listeners
-            notifyOrderStatusChanged(order);
-            notifyOrdersUpdated();
-        } else {
-            Log.e(TAG, "Could not process payment. Order not found with ID: " + orderId);
-        }
-    }
-    
-    public void removeOrder(String orderId) {
-        Order order = databaseManager.getOrderById(orderId);
-        if (order != null) {
-            Log.d(TAG, "Removing order: " + order.getOrderNumber());
-            
-            databaseManager.removeOrder(orderId);
-            
-            // Check if table should be freed
-            List<Order> remainingOrders = getActiveOrdersByTable(order.getTableNumber());
-            if (remainingOrders.isEmpty()) {
-                databaseManager.updateTableStatus(order.getTableNumber(), "available");
-            }
-            
-            notifyOrderRemoved(orderId);
-            notifyOrdersUpdated();
-        }
-    }
-    
-    // Query operations
-    public List<Order> getAllOrders() {
-        return databaseManager.getAllOrders();
-    }
-    
-    public List<Order> getActiveOrders() {
-        List<Order> allOrders = getAllOrders();
-        List<Order> activeOrders = new ArrayList<>();
-        
-        for (Order order : allOrders) {
-            if (order.getPaymentStatus() == Order.PaymentStatus.WAITING) {
-                activeOrders.add(order);
-            }
-        }
-        
-        return activeOrders;
-    }
-    
-    public List<Order> getOrdersByStatus(Order.OrderStatus status) {
-        return databaseManager.getOrdersByStatus(status);
-    }
-    
-    public List<Order> getOrdersByTable(String tableNumber) {
-        return databaseManager.getOrdersByTable(tableNumber);
-    }
-    
-    public List<Order> getActiveOrdersByTable(String tableNumber) {
-        List<Order> activeOrders = new ArrayList<>();
-        for (Order order : getOrdersByTable(tableNumber)) {
-            if (order.getOrderStatus() != Order.OrderStatus.ON_SERVICE) {
-                activeOrders.add(order);
-            }
-        }
-        return activeOrders;
-    }
-
-    // ✅ BỔ SUNG PHƯƠNG THỨC NÀY
-    public Order getOrderByOrderNumber(String orderNumber) {
-        if (orderNumber == null) return null;
-        List<Order> allOrders = getAllOrders();
-        for (Order order : allOrders) {
-            if (orderNumber.equals(order.getOrderNumber())) {
-                return order;
-            }
-        }
-        return null;
-    }
-    // ✅ BỔ SUNG PHƯƠNG THỨC NÀY
-    public Order getOrderById(String orderId) {
-    if (orderId == null || orderId.isEmpty()) {
-        Log.w(TAG, "getOrderById called with null/empty orderId");
-        return null;
-    }
-    
-    List<Order> allOrders = getAllOrders();
-    for (Order order : allOrders) {
-        if (orderId.equals(order.getOrderId())) {
-            Log.d(TAG, "Found order by ID: " + orderId);
-            return order;
-        }
-    }
-    
-    Log.w(TAG, "Order not found by ID: " + orderId);
-    return null;
-}
-
-    /**
-     * Lấy danh sách các đơn hàng theo trạng thái thanh toán.
-     * @param status Trạng thái thanh toán cần lọc (ví dụ: Order.PaymentStatus.PAID).
-     * @return Danh sách các đơn hàng đã được lọc.
-     */
-    public List<Order> getOrdersByPaymentStatus(Order.PaymentStatus status) {
-        // Lấy danh sách tất cả các đơn hàng từ DatabaseManager để đảm bảo dữ liệu luôn mới nhất
-        List<Order> allOrders = databaseManager.getAllOrders();
-        
-        if (allOrders == null || status == null) {
-            return new ArrayList<>(); // Trả về danh sách rỗng nếu không có đơn hàng hoặc trạng thái là null
-        }
-
-        // Sử dụng Stream API để lọc danh sách
-        return allOrders.stream()
-                .filter(order -> order.getPaymentStatus() == status)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Update an existing order
-     */
-    public void updateOrder(Order order) {
-        if (order == null) return;
-
-        // Update in database
-        databaseManager.updateOrder(order);
-        
-        // Notify listeners
-        notifyOrderStatusChanged(order);
-        notifyOrdersUpdated();
-        
-        Log.d(TAG, "Updated order: " + order.getOrderId() + " with status: " + order.getOrderStatus());
-    }
-
-    // Statistics
-    public int getTotalOrdersCount() {
-        return getAllOrders().size();
-    }
-    
-    public int getActiveOrdersCount() {
-        return getActiveOrders().size();
-    }
-    
-    public double getTotalRevenue() {
-        return databaseManager.getTotalRevenue();
-    }
-    
-    // Notification helpers
-    private void notifyOrdersUpdated() {
-        List<Order> orders = getAllOrders();
+    // Notification methods
+    private void notifyOrderCreated(Order order) {
         for (OrderListener listener : listeners) {
-            listener.onOrdersUpdated(orders);
+            listener.onOrderCreated(order);
         }
     }
     
-    private void notifyOrderAdded(Order order) {
+    private void notifyOrderUpdated(Order order) {
         for (OrderListener listener : listeners) {
-            listener.onOrderAdded(order);
+            listener.onOrderUpdated(order);
         }
     }
     
-    private void notifyOrderStatusChanged(Order order) {
+    protected void notifyOrderStatusChanged(Order order) {
         for (OrderListener listener : listeners) {
             listener.onOrderStatusChanged(order);
         }
     }
     
-    private void notifyOrderRemoved(String orderId) {
+    protected void notifyOrdersUpdated() {
         for (OrderListener listener : listeners) {
-            listener.onOrderRemoved(orderId);
+            listener.onOrdersUpdated();
         }
     }
 }
