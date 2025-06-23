@@ -269,15 +269,18 @@ public class Profile extends AppCompatActivity {
     }
 
     private void logout() {
-        getSharedPreferences(USER_PREFS, MODE_PRIVATE).edit().clear().apply();
-        Intent intent = new Intent(this, LoginActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        // ✅ SỬA LỖI: Sử dụng UserManager để đăng xuất và chuyển đến AuthActivity
+        UserManager.getInstance(this).logoutUser();
+        
+        Intent intent = new Intent(this, AuthActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }
 
     private void switchAccount() {
-        startActivity(new Intent(this, LoginActivity.class));
+        // ✅ SỬA LỖI: Chức năng chuyển tài khoản cũng nên thực hiện đăng xuất
+        logout();
     }
 
     private void goToActivity(Class<?> activityClass) {

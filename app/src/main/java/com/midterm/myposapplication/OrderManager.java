@@ -4,6 +4,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 public class OrderManager {
     
@@ -192,6 +193,25 @@ public class OrderManager {
     Log.w(TAG, "Order not found by ID: " + orderId);
     return null;
 }
+
+    /**
+     * Lấy danh sách các đơn hàng theo trạng thái thanh toán.
+     * @param status Trạng thái thanh toán cần lọc (ví dụ: Order.PaymentStatus.PAID).
+     * @return Danh sách các đơn hàng đã được lọc.
+     */
+    public List<Order> getOrdersByPaymentStatus(Order.PaymentStatus status) {
+        // Lấy danh sách tất cả các đơn hàng từ DatabaseManager để đảm bảo dữ liệu luôn mới nhất
+        List<Order> allOrders = databaseManager.getAllOrders();
+        
+        if (allOrders == null || status == null) {
+            return new ArrayList<>(); // Trả về danh sách rỗng nếu không có đơn hàng hoặc trạng thái là null
+        }
+
+        // Sử dụng Stream API để lọc danh sách
+        return allOrders.stream()
+                .filter(order -> order.getPaymentStatus() == status)
+                .collect(Collectors.toList());
+    }
 
     // Statistics
     public int getTotalOrdersCount() {

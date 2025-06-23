@@ -12,18 +12,49 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyPOSAPPLICATION"
         tools:targetApi="31">
+
+        <!-- AuthActivity - Màn hình đăng nhập (LAUNCHER) -->
         <activity
-            android:name=".Cart"
-            android:exported="false" />
-        <activity
-            android:name=".MainActivity"
-            android:exported="true">
+            android:name=".AuthActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- MainActivity - Màn hình chính cho nhân viên -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:parentActivityName=".AuthActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".AuthActivity" />
+        </activity>
+
+        <!-- DashboardActivityAdmin - Màn hình chính cho admin -->
+        <activity
+            android:name=".DashboardActivityAdmin"
+            android:exported="false"
+            android:parentActivityName=".AuthActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".AuthActivity" />
+        </activity>
+
+        <!-- Cart - Màn hình lịch sử đơn hàng -->
+        <activity
+            android:name=".Cart"
+            android:exported="false"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+
+        <!-- TableSelectionActivity - Màn hình chọn bàn -->
         <activity
             android:name=".TableSelectionActivity"
             android:exported="false"
@@ -33,15 +64,28 @@
                 android:value=".MainActivity" />
         </activity>
 
+        <!-- PaymentActivity - Màn hình thanh toán -->
         <activity
             android:name=".PaymentActivity"
             android:exported="false"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:parentActivityName=".Cart">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".Cart" />
+        </activity>
 
+        <!-- OrderDetailActivity - Màn hình chi tiết đơn hàng -->
         <activity
             android:name=".OrderDetailActivity"
             android:exported="false"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:parentActivityName=".Cart">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".Cart" />
+        </activity>
+
     </application>
 
 </manifest>
