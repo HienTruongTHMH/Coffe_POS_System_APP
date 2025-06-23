@@ -64,6 +64,8 @@ public class Order {
         public String getCode() { return code; }
         public String getDisplayName() { return displayName; }
     }
+
+    private String paymentMethod; // Thêm phương thức thanh toán "Cashing" và "Banking"
     
     // Constructor
     public Order(String tableNumber, String tableName, String employeeName) {
@@ -174,4 +176,13 @@ public class Order {
     public boolean isEmpty() { return items.isEmpty(); }
     public boolean isCompleted() { return orderStatus == OrderStatus.COMPLETED; }
     public boolean isPaid() { return paymentStatus == PaymentStatus.PAID; }
+
+    public String getPaymentMethod() { 
+    return paymentMethod; 
+}
+
+    public void setPaymentMethod(String paymentMethod) { 
+        this.paymentMethod = paymentMethod;
+        updateTimestamp();
+    }
 }

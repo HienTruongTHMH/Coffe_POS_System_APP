@@ -136,9 +136,47 @@ public class Cart extends AppCompatActivity
     }
 
     private void setupRecyclerView() {
-        orderAdapter = new OrderAdapter(filteredOrders, this);
+        CartOrderAdapter cartOrderAdapter = new CartOrderAdapter(filteredOrders, 
+            new CartOrderAdapter.OnCartOrderClickListener() {
+                @Override
+                public void onOrderClick(Order order) {
+                    // Navigate to Payment Activity when order is clicked
+                    Intent intent = new Intent(Cart.this, PaymentActivity.class);
+                    
+                    // Pass order information to the Payment Activity
+                    intent.putExtra("ORDER_ID", order.getOrderId());
+                    intent.putExtra("ORDER_NUMBER", order.getOrderNumber());
+                    intent.putExtra("ORDER_TOTAL", order.getTotalAmount());  // Sử dụng getTotalAmount() thay vì calculateTotal()
+                    intent.putExtra("TABLE_INFO", order.getTableInfo());
+                    
+                    // Start Payment Activity
+                    startActivity(intent);
+                    
+                    Log.d(TAG, "Navigating to Payment for order: " + order.getOrderNumber());
+                }
+                
+                @Override
+                public void onOrderStatusUpdate(Order order, Order.OrderStatus newStatus) {
+                    // Implementation remains the same
+                    orderManager.updateOrderStatus(order.getOrderId(), newStatus);
+                    Log.d(TAG, "Order status updated: " + order.getOrderNumber() + " -> " + newStatus.getDisplayName());
+                }
+                
+                @Override
+                public void onPaymentStatusUpdate(Order order, Order.PaymentStatus newStatus) {
+                    // Implementation remains the same
+                    order.updatePaymentStatus(newStatus);
+                    databaseManager.updateOrder(order);
+                    
+                    if (orderAdapter != null) {
+                        orderAdapter.notifyDataSetChanged();
+                    }
+                    
+                    Log.d(TAG, "Payment status updated: " + order.getOrderNumber() + " -> " + newStatus.getDisplayName());
+                }
+            });
         ordersRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        ordersRecyclerView.setAdapter(orderAdapter);
+        ordersRecyclerView.setAdapter(cartOrderAdapter);
         Log.d(TAG, "RecyclerView setup completed");
     }
 

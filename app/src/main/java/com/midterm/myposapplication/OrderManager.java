@@ -174,6 +174,24 @@ public class OrderManager {
         }
         return null;
     }
+    // ✅ BỔ SUNG PHƯƠNG THỨC NÀY
+    public Order getOrderById(String orderId) {
+    if (orderId == null || orderId.isEmpty()) {
+        Log.w(TAG, "getOrderById called with null/empty orderId");
+        return null;
+    }
+    
+    List<Order> allOrders = getAllOrders();
+    for (Order order : allOrders) {
+        if (orderId.equals(order.getOrderId())) {
+            Log.d(TAG, "Found order by ID: " + orderId);
+            return order;
+        }
+    }
+    
+    Log.w(TAG, "Order not found by ID: " + orderId);
+    return null;
+}
 
     // Statistics
     public int getTotalOrdersCount() {
