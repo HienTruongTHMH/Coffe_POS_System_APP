@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="8dp">
+
+    <!-- All Orders Tab -->
+    <TextView
+        android:id="@+id/tab_all"
+        style="@style/FilterTab.Selected"
+        android:text="Tất cả" />
+
+    <!-- Preparing Tab -->
+    <TextView
+        android:id="@+id/tab_preparing"
+        style="@style/FilterTab"
+        android:text="Đang chuẩn bị" />
+
+    <!-- On Service Tab -->
+    <TextView
+        android:id="@+id/tab_serving"
+        style="@style/FilterTab"
+        android:text="Đã giao tới bàn" />
+
+</LinearLayout>

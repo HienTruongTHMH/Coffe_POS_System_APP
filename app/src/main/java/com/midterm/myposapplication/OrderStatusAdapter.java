@@ -84,18 +84,12 @@ public class OrderStatusAdapter extends RecyclerView.Adapter<OrderStatusAdapter.
         private Drawable getStatusBackground(Order.OrderStatus status) {
             int drawableRes;
             switch (status) {
-                case READY:
-                    drawableRes = R.drawable.status_badge_ready;
-                    break;
-                case SERVING:
-                    drawableRes = R.drawable.status_serving_background;
-                    break;
-                case COMPLETED:
-                    drawableRes = R.drawable.status_complete_background;
+                case ON_SERVICE:
+                    drawableRes = R.drawable.status_badge_serving;
                     break;
                 case PREPARING:
                 default:
-                    drawableRes = R.drawable.status_preparing_background;
+                    drawableRes = R.drawable.status_badge_preparing;
                     break;
             }
             return ContextCompat.getDrawable(context, drawableRes);

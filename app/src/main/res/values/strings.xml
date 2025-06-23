@@ -1,3 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">My POS APPLICATION</string>
+    <string name="app_name">POS Coffee Shop</string>
+    
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_tables">Tables</string>
+    <string name="nav_orders">Orders</string>
+    <string name="nav_profile">Profile</string>
+    
+    <!-- Order Status -->
+    <string name="status_preparing">Preparing</string>
+    <string name="status_on_service">On Service</string>
+    <string name="status_all">All Orders</string>
+    
+    <!-- Payment Status -->
+    <string name="payment_waiting">Waiting</string>
+    <string name="payment_paid">Paid</string>
+    
+    <!-- Buttons -->
+    <string name="btn_login">Login</string>
+    <string name="btn_register">Register</string>
+    <string name="btn_logout">Logout</string>
+    <string name="btn_pay">Pay Now</string>
+    <string name="btn_mark_served">Mark as Served</string>
+    <string name="btn_add_to_cart">Add to Cart</string>
+    <string name="btn_place_order">Place Order</string>
+    
+    <!-- Format Strings -->
+    <string name="order_number_format">Order #%1$s</string>
+    <string name="table_format">Table %1$s</string>
+    <string name="price_format">$%1$,.2f</string>
+    <string name="quantity_format">%1$dx</string>
+    <string name="order_time_format">Ordered at: %1$s</string>
+    <string name="total_amount_format">Total: $%1$,.2f</string>
+    
+    <!-- Messages -->
+    <string name="msg_login_success">Login successful</string>
+    <string name="msg_login_failed">Login failed. Please check your credentials.</string>
+    <string name="msg_order_placed">Order placed successfully</string>
+    <string name="msg_order_updated">Order status updated</string>
+    <string name="msg_payment_success">Payment processed successfully</string>
+    <string name="msg_no_orders">No orders found</string>
+    <string name="msg_confirm_logout">Are you sure you want to logout?</string>
+    
+    <!-- Errors -->
+    <string name="error_network">Network connection error</string>
+    <string name="error_no_order_id">Order ID not found</string>
+    <string name="error_invalid_credentials">Invalid username or password</string>
+    <string name="error_empty_cart">Cart is empty</string>
+    
+    <!-- Profile -->
+    <string name="profile_title">Account Information</string>
+    <string name="profile_username">Username</string>
+    <string name="profile_role">Role</string>
+    <string name="profile_email">Email</string>
+    
+    <!-- Labels -->
+    <string name="label_username">Username</string>
+    <string name="label_password">Password</string>
+    <string name="label_table_number">Table Number</string>
+    <string name="label_order_items">Order Items</string>
+    <string name="label_active_orders">Active Orders</string>
 </resources>

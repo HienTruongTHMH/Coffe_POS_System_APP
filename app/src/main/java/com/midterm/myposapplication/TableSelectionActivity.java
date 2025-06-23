@@ -25,7 +25,7 @@ public class TableSelectionActivity extends AppCompatActivity
     private RecyclerView orderStatusRecycler;
     
     // ✅ Add filter tab TextViews
-    private TextView tabAll, tabPreparing, tabReady, tabServing;
+    private TextView tabAll, tabPreparing, tabServing;
     private String currentStatusFilter = "all"; // ✅ Default to "all"
     
     // Adapters
@@ -136,16 +136,17 @@ public class TableSelectionActivity extends AppCompatActivity
         outsideTablesRecycler = findViewById(R.id.outside_tables_recycler);
         orderStatusRecycler = findViewById(R.id.order_status_recycler);
         
-        // ✅ Initialize filter tabs - check if they exist in layout
+        // ✅ Cập nhật: Chỉ giữ lại 2 tab status thay vì 3 tab cũ
         tabAll = findViewById(R.id.tab_all);
         tabPreparing = findViewById(R.id.tab_preparing);
-        tabReady = findViewById(R.id.tab_ready);
-        tabServing = findViewById(R.id.tab_serving);
+        tabServing = findViewById(R.id.tab_serving);  // Đổi tên từ tabReady thành tabServing
         
-        // ✅ Log to debug which views are found
+        // ✅ Xóa bỏ tabReady vì không còn trạng thái này
+        // tabReady = findViewById(R.id.tab_ready);
+        
+        // ✅ Log cập nhật
         Log.d(TAG, "Tab views initialized: all=" + (tabAll != null) + 
             ", preparing=" + (tabPreparing != null) + 
-            ", ready=" + (tabReady != null) + 
             ", serving=" + (tabServing != null));
     }
 
@@ -192,12 +193,11 @@ public class TableSelectionActivity extends AppCompatActivity
         if (tabPreparing != null) {
             tabPreparing.setOnClickListener(v -> filterOrdersByStatus("preparing"));
         }
-        if (tabReady != null) {
-            tabReady.setOnClickListener(v -> filterOrdersByStatus("ready"));
-        }
         if (tabServing != null) {
-            tabServing.setOnClickListener(v -> filterOrdersByStatus("serving"));
+            // ✅ Cập nhật: Đổi tên tab từ "ready" thành "on_service"
+            tabServing.setOnClickListener(v -> filterOrdersByStatus("on_service"));
         }
+        // ✅ Xóa bỏ tabServing (cũ) vì đã được thay thế bởi tabServing (mới)
         
         Log.d(TAG, "Status filter tabs setup completed");
     }
@@ -229,14 +229,11 @@ public class TableSelectionActivity extends AppCompatActivity
     // ✅ Add helper to convert string to enum
     private Order.OrderStatus getOrderStatusFromString(String status) {
         switch (status) {
+            case "on_service":
+                return Order.OrderStatus.ON_SERVICE;
             case "preparing":
-                return Order.OrderStatus.PREPARING;
-            case "ready":
-                return Order.OrderStatus.READY;
-            case "serving":
-                return Order.OrderStatus.SERVING;
             default:
-                return null;
+                return Order.OrderStatus.PREPARING;
         }
     }
 
@@ -244,8 +241,8 @@ public class TableSelectionActivity extends AppCompatActivity
     private void updateStatusFilterSelection() {
         resetTabStyle(tabAll);
         resetTabStyle(tabPreparing);
-        resetTabStyle(tabReady);
         resetTabStyle(tabServing);
+        // ✅ Xóa bỏ tabReady vì không còn trạng thái này
 
         switch (currentStatusFilter) {
             case "all":
@@ -254,12 +251,10 @@ public class TableSelectionActivity extends AppCompatActivity
             case "preparing":
                 setSelectedTabStyle(tabPreparing);
                 break;
-            case "ready":
-                setSelectedTabStyle(tabReady);
-                break;
-            case "serving":
+            case "on_service":
                 setSelectedTabStyle(tabServing);
                 break;
+            // ✅ Xóa bỏ trạng thái "ready", "serving" vì không còn nữa
         }
     }
 
@@ -313,7 +308,9 @@ public class TableSelectionActivity extends AppCompatActivity
                     Toast.makeText(this, "Package feature coming soon", Toast.LENGTH_SHORT).show();
                     return true;
                 } else if (itemId == R.id.nav_profile) {
-                    Toast.makeText(this, "Profile feature coming soon", Toast.LENGTH_SHORT).show();
+                    // ✅ THÊM MỚI: Chuyển đến màn hình Profile
+                    Intent profileIntent = new Intent(TableSelectionActivity.this, Profile.class);
+                    startActivity(profileIntent);
                     return true;
                 }
                 return false;

@@ -1,5 +1,6 @@
 package com.midterm.myposapplication;
 
+import com.midterm.myposapplication.utils.IdGenerator;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,12 +30,7 @@ public class Order {
     // Order status enum
     public enum OrderStatus {
         PREPARING("Đang chuẩn bị"),
-        READY("Sẵn sàng"),
-        SERVING("Đang phục vụ"),
-        PAID("Đã thanh toán"), // ✅ FIXED: Thêm trạng thái PAID
-
-        COMPLETED("Hoàn thành");
-
+        ON_SERVICE("Đã giao tới bàn");
         
         private final String displayName;
         
@@ -49,8 +45,7 @@ public class Order {
     
     // Payment status enum
     public enum PaymentStatus {
-        PENDING("pending", "Chờ thanh toán"),
-        PROCESSING("processing", "Đang thanh toán"),
+        WAITING("waiting", "Chờ thanh toán"),
         PAID("paid", "Đã thanh toán");
         
         private final String code;
@@ -67,15 +62,16 @@ public class Order {
 
     private String paymentMethod; // Thêm phương thức thanh toán "Cashing" và "Banking"
     
-    // Constructor
+    // Constructor with auto-generated IDs
     public Order(String tableNumber, String tableName, String employeeName) {
-        this.orderId = UUID.randomUUID().toString();
+        this.orderId = IdGenerator.generateOrderId();
+        this.orderNumber = IdGenerator.generateOrderNumber();
         this.tableNumber = tableNumber;
         this.tableName = tableName;
         this.employeeName = employeeName;
         this.items = new ArrayList<>();
         this.orderStatus = OrderStatus.PREPARING;
-        this.paymentStatus = PaymentStatus.PENDING;
+        this.paymentStatus = PaymentStatus.WAITING; // Thay PENDING bằng WAITING
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
     }
@@ -134,6 +130,11 @@ public class Order {
         updateTimestamp();
     }
     
+    public void setPaymentMethod(String method) {
+        this.paymentMethod = method;
+        this.updatedAt = System.currentTimeMillis();
+    }
+    
     // Helper methods
     public String getFormattedAmount() {
         return String.format("$ %.2f", getTotalAmount());
@@ -167,22 +168,19 @@ public class Order {
     
     public List<OrderItem> getItems() { return new ArrayList<>(items); }
     
-    public OrderStatus getOrderStatus() { return orderStatus; }
+    public OrderStatus getOrderStatus() {
+        return orderStatus;
+    }
     public PaymentStatus getPaymentStatus() { return paymentStatus; }
     
     public long getCreatedAt() { return createdAt; }
     public long getUpdatedAt() { return updatedAt; }
     
     public boolean isEmpty() { return items.isEmpty(); }
-    public boolean isCompleted() { return orderStatus == OrderStatus.COMPLETED; }
+    public boolean isCompleted() { return orderStatus == OrderStatus.ON_SERVICE; }
     public boolean isPaid() { return paymentStatus == PaymentStatus.PAID; }
 
     public String getPaymentMethod() { 
     return paymentMethod; 
 }
-
-    public void setPaymentMethod(String paymentMethod) { 
-        this.paymentMethod = paymentMethod;
-        updateTimestamp();
-    }
 }

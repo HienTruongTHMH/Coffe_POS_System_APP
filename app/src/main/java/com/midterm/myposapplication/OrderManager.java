@@ -73,7 +73,7 @@ public class OrderManager {
             databaseManager.updateOrder(order);
             
             // Check if order is completed to free table
-            if (newStatus == Order.OrderStatus.COMPLETED) {
+            if (newStatus == Order.OrderStatus.ON_SERVICE) {
                 List<Order> tableOrders = getActiveOrdersByTable(order.getTableNumber());
                 if (tableOrders.isEmpty()) {
                     databaseManager.updateTableStatus(order.getTableNumber(), "available");
@@ -91,10 +91,9 @@ public class OrderManager {
         if (order != null) {
             Log.d(TAG, "Processing payment for order: " + order.getOrderNumber());
 
-            // Cập nhật cả hai trạng thái
+            // Cập nhật trạng thái thanh toán thành "Đã thanh toán"
             order.updatePaymentStatus(Order.PaymentStatus.PAID);
-            order.updateOrderStatus(Order.OrderStatus.COMPLETED); // Chuyển trạng thái đơn hàng thành "Hoàn thành"
-
+            
             // Lưu thay đổi vào database
             databaseManager.updateOrder(order);
 
@@ -105,8 +104,8 @@ public class OrderManager {
             }
 
             // Thông báo cho các listeners
-            notifyOrderStatusChanged(order); // Thông báo trạng thái đã thay đổi
-            notifyOrdersUpdated(); // Cập nhật lại toàn bộ danh sách
+            notifyOrderStatusChanged(order);
+            notifyOrdersUpdated();
         } else {
             Log.e(TAG, "Could not process payment. Order not found with ID: " + orderId);
         }
@@ -136,13 +135,15 @@ public class OrderManager {
     }
     
     public List<Order> getActiveOrders() {
+        List<Order> allOrders = getAllOrders();
         List<Order> activeOrders = new ArrayList<>();
-        for (Order order : getAllOrders()) {
-            if (order.getOrderStatus() != Order.OrderStatus.COMPLETED) {
+        
+        for (Order order : allOrders) {
+            if (order.getPaymentStatus() == Order.PaymentStatus.WAITING) {
                 activeOrders.add(order);
             }
         }
-        Log.d(TAG, "Found " + activeOrders.size() + " active orders");
+        
         return activeOrders;
     }
     
@@ -157,7 +158,7 @@ public class OrderManager {
     public List<Order> getActiveOrdersByTable(String tableNumber) {
         List<Order> activeOrders = new ArrayList<>();
         for (Order order : getOrdersByTable(tableNumber)) {
-            if (order.getOrderStatus() != Order.OrderStatus.COMPLETED) {
+            if (order.getOrderStatus() != Order.OrderStatus.ON_SERVICE) {
                 activeOrders.add(order);
             }
         }
@@ -211,6 +212,22 @@ public class OrderManager {
         return allOrders.stream()
                 .filter(order -> order.getPaymentStatus() == status)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Update an existing order
+     */
+    public void updateOrder(Order order) {
+        if (order == null) return;
+
+        // Update in database
+        databaseManager.updateOrder(order);
+        
+        // Notify listeners
+        notifyOrderStatusChanged(order);
+        notifyOrdersUpdated();
+        
+        Log.d(TAG, "Updated order: " + order.getOrderId() + " with status: " + order.getOrderStatus());
     }
 
     // Statistics

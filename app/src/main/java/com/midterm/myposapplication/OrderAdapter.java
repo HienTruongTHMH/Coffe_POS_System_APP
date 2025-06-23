@@ -62,11 +62,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         switch (status) {
             case PREPARING:
                 return context.getResources().getDrawable(R.drawable.status_preparing_background);
-            case READY:
-                return context.getResources().getDrawable(R.drawable.status_badge_ready);
-            case SERVING:
-                return context.getResources().getDrawable(R.drawable.status_serving_background);
-            case COMPLETED:
+            case ON_SERVICE:
                 return context.getResources().getDrawable(R.drawable.status_complete_background);
             default:
                 return context.getResources().getDrawable(R.drawable.status_preparing_background);
@@ -75,10 +71,8 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     
     private android.graphics.drawable.Drawable getPaymentStatusBackground(android.content.Context context, Order.PaymentStatus status) {
         switch (status) {
-            case PENDING:
+            case WAITING:
                 return context.getResources().getDrawable(R.drawable.status_pending_background);
-            case PROCESSING:
-                return context.getResources().getDrawable(R.drawable.status_preparing_background);
             case PAID:
                 return context.getResources().getDrawable(R.drawable.status_paid_background);
             default:

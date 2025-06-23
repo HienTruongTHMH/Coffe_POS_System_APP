@@ -110,9 +110,6 @@ public class Cart extends AppCompatActivity
         btnPreparing = findViewById(R.id.tab_preparing);
         if (btnPreparing == null) btnPreparing = findViewById(R.id.btn_preparing);
 
-        btnReady = findViewById(R.id.tab_ready);
-//        if (btnReady == null) btnReady = findViewById(R.id.btn_ready);
-
         btnServing = findViewById(R.id.tab_serving);
         if (btnServing == null) btnServing = findViewById(R.id.btn_serving);
 
@@ -222,14 +219,9 @@ public class Cart extends AppCompatActivity
 
     private Order.OrderStatus getOrderStatusFromString(String status) {
         switch (status) {
+            case "on_service":
+                return Order.OrderStatus.ON_SERVICE;
             case "preparing":
-                return Order.OrderStatus.PREPARING;
-            case "ready":
-                return Order.OrderStatus.READY;
-            case "serving":
-                return Order.OrderStatus.SERVING;
-            case "completed":
-                return Order.OrderStatus.COMPLETED;
             default:
                 return Order.OrderStatus.PREPARING;
         }
@@ -305,7 +297,9 @@ public class Cart extends AppCompatActivity
                     Toast.makeText(this, "Package feature coming soon", Toast.LENGTH_SHORT).show();
                     return true;
                 } else if (itemId == R.id.nav_profile) {
-                    Toast.makeText(this, "Profile feature coming soon", Toast.LENGTH_SHORT).show();
+                    // ✅ THÊM MỚI: Chuyển đến màn hình Profile
+                    Intent profileIntent = new Intent(Cart.this, Profile.class);
+                    startActivity(profileIntent);
                     return true;
                 }
                 return false;
@@ -338,4 +332,10 @@ public class Cart extends AppCompatActivity
         
         Log.d(TAG, "Payment status updated: " + order.getOrderNumber() + " -> " + newStatus.getDisplayName());
     }
+        @Override
+        protected void onResume() {
+            super.onResume();
+            
+            // Tải lại thông tin đơn hàng từ database để đảm bảo dữ liệu mới nhất
+        }
 }

@@ -24,6 +24,10 @@
     <color name="button_remove_pressed">#E53935</color>
     <color name="button_remove_border">#D32F2F</color>
     <color name="button_remove_light">#FFEBEE</color>
+
+      <!-- Button Action Colors -->
+    <color name="btn_deliver">#FFA726</color> <!-- Orange for deliver button -->
+    <color name="btn_payment">#8D6E63</color> <!-- Brown for payment button -->
     
     <!-- Table Status Colors -->
     <color name="status_available">#4CAF50</color>
