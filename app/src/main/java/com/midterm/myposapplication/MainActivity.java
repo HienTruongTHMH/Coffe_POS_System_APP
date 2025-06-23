@@ -15,11 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity 
-    implements DrinkAdapter.OnDrinkClickListener,
+    implements DrinkAdapter.OnDrinkClickListener, 
                CurrentOrderAdapter.OnOrderItemChangeListener,
-               OrderStatusAdapter.OnOrderClickListener, // ✅ Thay thế interface
-               OrderDataManager.OrderDataListener {
-
+               OrderManager.OrderListener {
+    
     private static final String TAG = "MainActivity";
     private static final int REQUEST_TABLE_SELECTION = 1001;
 
@@ -33,7 +32,7 @@ public class MainActivity extends AppCompatActivity
     // Adapters
     private DrinkAdapter drinkAdapter;
     private CurrentOrderAdapter currentOrderAdapter;
-    private OrderStatusAdapter orderStatusAdapter; // ✅ Sử dụng OrderStatusAdapter
+    private OrderStatusAdapter orderStatusAdapter;
 
     // Data
     private List<Drink> allDrinks;
@@ -44,23 +43,26 @@ public class MainActivity extends AppCompatActivity
     // Current state
     private String selectedTableNumber = "";
     private String selectedTableName = "";
-    private String currentStatusFilter = "all"; // ✅ Đặt "all" làm mặc định
+    private String currentStatusFilter = "all";
 
     // UI Components for status filter
-    private LinearLayout statusFilterContainer;
-    private TextView tabAll, tabPreparing, tabReady, tabServing; // ✅ Thêm tabAll
+    private TextView tabAll, tabPreparing, tabReady, tabServing;
 
-    // ✅ Data Manager
-    private OrderDataManager orderDataManager;
+    // ✅ FIXED: Use only OrderManager and DatabaseManager
+    private OrderManager orderManager;
+    private DatabaseManager databaseManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // ✅ Initialize data manager and register listener
-        orderDataManager = OrderDataManager.getInstance();
-        orderDataManager.addListener(this);
+        // ✅ FIXED: Initialize managers properly
+        orderManager = OrderManager.getInstance();
+        databaseManager = DatabaseManager.getInstance();
+        
+        // ✅ FIXED: Register as OrderManager listener only
+        orderManager.addListener(this);
 
         initializeViews();
         setupDrinksData();
@@ -69,60 +71,45 @@ public class MainActivity extends AppCompatActivity
         setupOrderStatus();
         setupBottomNavigation();
         handleIntent();
+        
+        // ✅ FIXED: Initial UI update
+        updateCurrentOrderUI();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // ✅ Unregister listener to prevent memory leaks
-        if (orderDataManager != null) {
-            orderDataManager.removeListener(this);
+        // ✅ FIXED: Unregister listener to prevent memory leaks
+        if (orderManager != null) {
+            orderManager.removeListener(this);
         }
     }
 
-    // ✅ OrderDataListener implementation
+    // ✅ FIXED: OrderManager.OrderListener implementation only
     @Override
     public void onOrdersUpdated(List<Order> orders) {
         ordersList = orders;
         filterOrdersByStatus(currentStatusFilter);
+        Log.d(TAG, "Orders updated: " + orders.size() + " orders");
     }
 
     @Override
     public void onOrderStatusChanged(Order order) {
-        if (orderStatusAdapter != null) { // ✅ Cập nhật adapter đúng
+        if (orderStatusAdapter != null) {
             orderStatusAdapter.notifyDataSetChanged();
         }
+        Log.d(TAG, "Order status changed: " + order.getOrderNumber());
     }
 
     @Override
     public void onOrderAdded(Order order) {
         Toast.makeText(this, "Đơn hàng mới: " + order.getOrderNumber(), Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "Order added: " + order.getOrderNumber());
     }
 
     @Override
     public void onOrderRemoved(String orderId) {
-        // Handle order removal if needed
-    }
-
-    private Order.OrderStatus getOrderStatusFromString(String status) {
-        switch (status) {
-            case "preparing":
-                return Order.OrderStatus.PREPARING;
-            case "ready":
-                return Order.OrderStatus.READY;
-            case "serving":
-                return Order.OrderStatus.SERVING;
-            default:
-                return null;
-        }
-    }
-
-    private Order.OrderStatus getCurrentStatusFilter() {
-        switch (currentStatusFilter) {
-            case "ready": return Order.OrderStatus.READY;
-            case "serving": return Order.OrderStatus.SERVING;
-            default: return Order.OrderStatus.PREPARING;
-        }
+        Log.d(TAG, "Order removed: " + orderId);
     }
 
     private void initializeViews() {
@@ -131,17 +118,21 @@ public class MainActivity extends AppCompatActivity
         orderStatusRecycler = findViewById(R.id.order_status_recycler);
         currentOrderSection = findViewById(R.id.current_order_section);
         currentTableText = findViewById(R.id.current_table_text);
-        statusFilterContainer = findViewById(R.id.status_filter_container);
-        tabAll = findViewById(R.id.tab_all); // ✅ Lấy ID của tab mới
+        
+        // Status filter tabs
+        tabAll = findViewById(R.id.tab_all);
         tabPreparing = findViewById(R.id.tab_preparing);
         tabReady = findViewById(R.id.tab_ready);
         tabServing = findViewById(R.id.tab_serving);
     }
 
     private void setupDrinksData() {
-        allDrinks = Local_Database_Staff.getInstance().getAllDrinks();
+        // ✅ FIXED: Use DatabaseManager consistently
+        allDrinks = databaseManager.getAllDrinks();
         filteredDrinks = new ArrayList<>(allDrinks);
         currentOrderItems = new ArrayList<>();
+        
+        Log.d(TAG, "Drinks data setup: " + allDrinks.size() + " drinks loaded");
     }
 
     private void setupRecyclerViews() {
@@ -157,17 +148,23 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setupOrderStatus() {
-        // ✅ Lấy tất cả order đang hoạt động để hiển thị ban đầu
-        ordersList = orderDataManager.getAllActiveOrders();
+        // ✅ FIXED: Use OrderManager consistently
+        ordersList = orderManager.getActiveOrders();
         
-        // ✅ Sử dụng OrderStatusAdapter
-        orderStatusAdapter = new OrderStatusAdapter(ordersList, this);
+        orderStatusAdapter = new OrderStatusAdapter(ordersList, new OrderStatusAdapter.OnOrderClickListener() {
+            @Override
+            public void onOrderClick(Order order) {
+                Toast.makeText(MainActivity.this, "Order " + order.getOrderNumber() + " details", Toast.LENGTH_SHORT).show();
+            }
+        });
+        
         orderStatusRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         orderStatusRecycler.setAdapter(orderStatusAdapter);
+        
+        Log.d(TAG, "Order status setup: " + ordersList.size() + " active orders");
     }
 
     private void setupStatusFilterTabs() {
-        // ✅ Thêm listener cho tab "Tất cả"
         tabAll.setOnClickListener(v -> {
             currentStatusFilter = "all";
             updateStatusFilterSelection();
@@ -193,26 +190,47 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    // ✅ Đổi tên và cập nhật logic filter
     private void filterOrdersByStatus(String status) {
         List<Order> filteredList;
+        
         if ("all".equals(status)) {
-            filteredList = orderDataManager.getAllActiveOrders();
+            filteredList = orderManager.getActiveOrders();
         } else {
             Order.OrderStatus targetStatus = getOrderStatusFromString(status);
-            filteredList = orderDataManager.getOrdersByStatus(targetStatus);
+            if (targetStatus != null) {
+                filteredList = orderManager.getOrdersByStatus(targetStatus);
+            } else {
+                filteredList = new ArrayList<>();
+            }
         }
+        
         orderStatusAdapter.updateOrders(filteredList);
+        Log.d(TAG, "Filtered orders by " + status + ": " + filteredList.size() + " orders");
+    }
+
+    private Order.OrderStatus getOrderStatusFromString(String status) {
+        switch (status) {
+            case "preparing":
+                return Order.OrderStatus.PREPARING;
+            case "ready":
+                return Order.OrderStatus.READY;
+            case "serving":
+                return Order.OrderStatus.SERVING;
+            default:
+                return null;
+        }
     }
 
     private void updateStatusFilterSelection() {
-        resetTabStyle(tabAll); // ✅ Reset tab "Tất cả"
+        // Reset all tabs
+        resetTabStyle(tabAll);
         resetTabStyle(tabPreparing);
-        resetTabStyle(tabReady);  
+        resetTabStyle(tabReady);
         resetTabStyle(tabServing);
         
+        // Set selected tab
         switch (currentStatusFilter) {
-            case "all": // ✅ Xử lý trạng thái cho tab "Tất cả"
+            case "all":
                 setSelectedTabStyle(tabAll);
                 break;
             case "preparing":
@@ -273,14 +291,17 @@ public class MainActivity extends AppCompatActivity
             if ("TABLE_SELECTED".equals(mode)) {
                 selectedTableNumber = intent.getStringExtra("SELECTED_TABLE_NUMBER");
                 selectedTableName = intent.getStringExtra("SELECTED_TABLE_NAME");
-                updateCurrentOrderDisplay();
+                updateCurrentOrderUI();
             }
         }
     }
 
     @Override
     public void onDrinkClick(Drink drink) {
+        Log.d(TAG, "Drink clicked: " + drink.getName());
+        
         if (selectedTableNumber.isEmpty()) {
+            // No table selected, go to table selection
             Intent intent = new Intent(this, TableSelectionActivity.class);
             intent.putExtra("SELECTED_DRINK_ID", drink.getId());
             intent.putExtra("SELECTED_DRINK_NAME", drink.getName());
@@ -289,6 +310,7 @@ public class MainActivity extends AppCompatActivity
             intent.putExtra("SELECTED_DRINK_IMAGE", drink.getImageResId());
             startActivityForResult(intent, REQUEST_TABLE_SELECTION);
         } else {
+            // Table already selected, add to current order
             addToCurrentOrder(drink);
         }
     }
@@ -296,7 +318,7 @@ public class MainActivity extends AppCompatActivity
     private void addToCurrentOrder(Drink drink) {
         boolean found = false;
         for (CurrentOrderItem item : currentOrderItems) {
-            if (item.getDrinkId().equals(drink.getId())) {
+            if (item.getDrinkId().equals(drink.getId()) && "M".equals(item.getSize())) {
                 item.setQuantity(item.getQuantity() + 1);
                 found = true;
                 break;
@@ -314,20 +336,30 @@ public class MainActivity extends AppCompatActivity
             ));
         }
         
-        currentOrderAdapter.notifyDataSetChanged();
-        updateCurrentOrderDisplay();
+        updateCurrentOrderUI();
+        Log.d(TAG, "Added " + drink.getName() + " to current order");
     }
 
-    private void updateCurrentOrderDisplay() {
-        if (!selectedTableName.isEmpty() && !currentOrderItems.isEmpty()) {
+    // ✅ FIXED: Central UI update method
+    private void updateCurrentOrderUI() {
+        // Update current order section visibility and text
+        if (!selectedTableName.isEmpty()) {
             currentOrderSection.setVisibility(android.view.View.VISIBLE);
-            currentTableText.setText(selectedTableName + " - " + getTotalItems() + " món");
-        } else if (!selectedTableName.isEmpty()) {
-            currentOrderSection.setVisibility(android.view.View.VISIBLE);
-            currentTableText.setText(selectedTableName + " - 0 món");
+            int totalItems = getTotalItems();
+            currentTableText.setText(selectedTableName + " - " + totalItems + " món");
         } else {
             currentOrderSection.setVisibility(android.view.View.GONE);
         }
+
+        // ✅ FIXED: Show/hide action buttons based on cart content
+        if (currentOrderAdapter != null) {
+            boolean hasItems = !currentOrderItems.isEmpty();
+            Log.d(TAG, "Setting action buttons visibility: " + hasItems + " (items count: " + currentOrderItems.size() + ")");
+            currentOrderAdapter.setShowActionButtons(hasItems);
+            currentOrderAdapter.notifyDataSetChanged();
+        }
+        
+        Log.d(TAG, "UI updated - Table: " + selectedTableName + ", Items: " + currentOrderItems.size());
     }
 
     private int getTotalItems() {
@@ -338,6 +370,7 @@ public class MainActivity extends AppCompatActivity
         return total;
     }
 
+    // ✅ CurrentOrderAdapter.OnOrderItemChangeListener implementation
     @Override
     public void onQuantityChanged(CurrentOrderItem item, int newQuantity) {
         if (newQuantity <= 0) {
@@ -345,21 +378,15 @@ public class MainActivity extends AppCompatActivity
         } else {
             item.setQuantity(newQuantity);
         }
-        currentOrderAdapter.notifyDataSetChanged();
-        updateCurrentOrderDisplay();
+        updateCurrentOrderUI();
+        Log.d(TAG, "Quantity changed for " + item.getDrinkName() + ": " + newQuantity);
     }
 
     @Override
     public void onItemRemoved(CurrentOrderItem item) {
         currentOrderItems.remove(item);
-        currentOrderAdapter.notifyDataSetChanged();
-        updateCurrentOrderDisplay();
-    }
-
-    // ✅ Implement đúng phương thức onOrderClick từ OrderStatusAdapter
-    @Override
-    public void onOrderClick(Order order) {
-        Toast.makeText(this, "Order " + order.getOrderNumber() + " details", Toast.LENGTH_SHORT).show();
+        updateCurrentOrderUI();
+        Log.d(TAG, "Item removed: " + item.getDrinkName());
     }
 
     @Override
@@ -369,21 +396,23 @@ public class MainActivity extends AppCompatActivity
             return;
         }
         
-        Order order = createOrderFromCurrentItems();
+        if (selectedTableNumber.isEmpty()) {
+            Toast.makeText(this, "Vui lòng chọn bàn", Toast.LENGTH_SHORT).show();
+            return;
+        }
         
-        // ✅ Use OrderDataManager for consistent updates
-        String orderNumber = orderDataManager.addNewOrder(order);
+        // ✅ FIXED: Create order and use OrderManager
+        Order order = createOrderFromCurrentItems();
+        String orderNumber = orderManager.createOrder(order);
         
         // Clear current order
         currentOrderItems.clear();
-        currentOrderAdapter.notifyDataSetChanged();
-        
-        // Reset table selection
         selectedTableNumber = "";
         selectedTableName = "";
-        updateCurrentOrderDisplay();
+        updateCurrentOrderUI();
         
         Toast.makeText(this, "Đã xác nhận đơn hàng " + orderNumber, Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "Order confirmed: " + orderNumber);
     }
 
     @Override
@@ -394,28 +423,29 @@ public class MainActivity extends AppCompatActivity
         }
         
         currentOrderItems.clear();
-        currentOrderAdapter.notifyDataSetChanged();
-        
         selectedTableNumber = "";
         selectedTableName = "";
-        updateCurrentOrderDisplay();
+        updateCurrentOrderUI();
         
         Toast.makeText(this, "Đã hủy đơn hàng", Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "Order cancelled");
     }
 
     private Order createOrderFromCurrentItems() {
-        Order order = new Order(selectedTableNumber, selectedTableName, "Nhân viên");
+        Order order = new Order(selectedTableNumber, selectedTableName, "Staff");
+        
         for (CurrentOrderItem currentItem : currentOrderItems) {
             OrderItem orderItem = new OrderItem(
                 currentItem.getDrinkId(),
                 currentItem.getDrinkName(),
-                currentItem.getPrice(), // ✅ Fix: Use getPrice() instead of getUnitPrice()
+                currentItem.getPrice(),
                 currentItem.getQuantity(),
                 currentItem.getSize(),
                 currentItem.getImageResId()
             );
             order.addItem(orderItem);
         }
+        
         return order;
     }
 
@@ -427,6 +457,7 @@ public class MainActivity extends AppCompatActivity
             selectedTableNumber = data.getStringExtra("SELECTED_TABLE_NUMBER");
             selectedTableName = data.getStringExtra("SELECTED_TABLE_NAME");
             
+            // Add the selected drink to current order
             String drinkId = data.getStringExtra("SELECTED_DRINK_ID");
             String drinkName = data.getStringExtra("SELECTED_DRINK_NAME");
             double drinkPrice = data.getDoubleExtra("SELECTED_DRINK_PRICE", 0);
@@ -437,10 +468,10 @@ public class MainActivity extends AppCompatActivity
                 currentOrderItems.add(new CurrentOrderItem(
                     drinkId, drinkName, drinkPrice, 1, drinkSize, drinkImage
                 ));
-                currentOrderAdapter.notifyDataSetChanged();
+                Log.d(TAG, "Added from table selection: " + drinkName);
             }
             
-            updateCurrentOrderDisplay();
+            updateCurrentOrderUI();
         }
     }
 }

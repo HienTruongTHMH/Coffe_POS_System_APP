@@ -1,12 +1,12 @@
 package com.midterm.myposapplication;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,22 +14,23 @@ import java.util.List;
 
 public class CurrentOrderAdapter extends RecyclerView.Adapter<CurrentOrderAdapter.CurrentOrderViewHolder> {
     
-    private List<CurrentOrderItem> currentOrderItems;
-    private boolean showActionButtons = false; // ✅ Control button visibility
+    private static final String TAG = "CurrentOrderAdapter";
     
-    // ✅ Enhanced interface với action buttons
+    private List<CurrentOrderItem> currentOrderItems;
+    private OnOrderItemChangeListener listener;
+    private boolean showActionButtons = false;
+    
     public interface OnOrderItemChangeListener {
         void onQuantityChanged(CurrentOrderItem item, int newQuantity);
         void onItemRemoved(CurrentOrderItem item);
-        void onConfirmOrder(List<CurrentOrderItem> items); // ✅ New method
-        void onCancelOrder(); // ✅ New method
+        void onConfirmOrder(List<CurrentOrderItem> items);
+        void onCancelOrder();
     }
-    
-    private OnOrderItemChangeListener listener;
-    
-    public CurrentOrderAdapter(List<CurrentOrderItem> currentOrderItems, OnOrderItemChangeListener listener) {
-        this.currentOrderItems = currentOrderItems;
+
+    public CurrentOrderAdapter(List<CurrentOrderItem> items, OnOrderItemChangeListener listener) {
+        this.currentOrderItems = items;
         this.listener = listener;
+        Log.d(TAG, "CurrentOrderAdapter initialized with " + items.size() + " items");
     }
     
     @NonNull
@@ -42,57 +43,95 @@ public class CurrentOrderAdapter extends RecyclerView.Adapter<CurrentOrderAdapte
     @Override
     public void onBindViewHolder(@NonNull CurrentOrderViewHolder holder, int position) {
         CurrentOrderItem item = currentOrderItems.get(position);
+        if (item == null) {
+            Log.e(TAG, "CurrentOrderItem is null at position: " + position);
+            return;
+        }
+
+        Log.d(TAG, "Binding item: " + item.getDrinkName() + " x" + item.getQuantity());
         
-        // Set data
-        holder.itemName.setText(item.getDrinkName() + " (" + item.getSize() + ")");
-        holder.itemPrice.setText(String.format("$%.2f", item.getPrice()));
-        holder.itemQuantity.setText(String.valueOf(item.getQuantity()));
-        holder.totalPrice.setText(String.format("$%.2f", item.getTotalPrice()));
-        
-        // Set image
-        if (item.getimageResId() != 0) {
-            holder.itemImage.setImageResource(item.getimageResId());
-        } else {
-            holder.itemImage.setImageResource(R.drawable.placeholder_drink);
+        // ✅ FIXED: Thêm kiểm tra null cho tất cả views
+        if (holder.drinkName != null) {
+            holder.drinkName.setText(item.getDrinkName());
         }
         
-        // Quantity controls
-        holder.btnPlus.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onQuantityChanged(item, item.getQuantity() + 1);
-            }
-        });
+        if (holder.drinkPrice != null) {
+            // Calculate total price for the line item (price * quantity)
+            double lineItemTotal = item.getPrice() * item.getQuantity();
+            holder.drinkPrice.setText(String.format("$%.2f", lineItemTotal));
+        }
         
-        holder.btnMinus.setOnClickListener(v -> {
-            if (listener != null) {
-                int newQuantity = item.getQuantity() - 1;
-                if (newQuantity <= 0) {
-                    listener.onItemRemoved(item);
-                } else {
-                    listener.onQuantityChanged(item, newQuantity);
-                }
-            }
-        });
-        
-        // ✅ Show action buttons only for last item when order has items
-        if (position == currentOrderItems.size() - 1 && currentOrderItems.size() > 0) {
-            holder.actionButtonsContainer.setVisibility(View.VISIBLE);
-            
-            // Cancel button
-            holder.btnCancelOrder.setOnClickListener(v -> {
+        if (holder.quantityText != null) {
+            holder.quantityText.setText(String.valueOf(item.getQuantity()));
+        }
+
+        if (holder.drinkImage != null) {
+            holder.drinkImage.setImageResource(item.getImageResId());
+        }
+
+        // Plus button
+        if (holder.plusButton != null) {
+            holder.plusButton.setOnClickListener(v -> {
                 if (listener != null) {
-                    listener.onCancelOrder();
+                    listener.onQuantityChanged(item, item.getQuantity() + 1);
+                    Log.d(TAG, "Increased quantity for " + item.getDrinkName());
                 }
             });
-            
-            // Confirm button
-            holder.btnConfirmOrder.setOnClickListener(v -> {
+        }
+
+        // Minus button
+        if (holder.minusButton != null) {
+            holder.minusButton.setOnClickListener(v -> {
                 if (listener != null) {
-                    listener.onConfirmOrder(currentOrderItems);
+                    int newQuantity = item.getQuantity() - 1;
+                    if (newQuantity <= 0) {
+                        listener.onItemRemoved(item);
+                        Log.d(TAG, "Removed item: " + item.getDrinkName());
+                    } else {
+                        listener.onQuantityChanged(item, newQuantity);
+                        Log.d(TAG, "Decreased quantity for " + item.getDrinkName());
+                    }
                 }
             });
-        } else {
-            holder.actionButtonsContainer.setVisibility(View.GONE);
+        }
+
+        // ✅ FIXED: Chỉ hiển thị action buttons ở item cuối cùng
+        boolean isLastItem = (position == currentOrderItems.size() - 1);
+        boolean shouldShowButtons = showActionButtons && isLastItem;
+        
+        int actionButtonsVisibility = shouldShowButtons ? View.VISIBLE : View.GONE;
+        
+        // Find the action buttons container
+        View actionButtonsLayout = holder.itemView.findViewById(R.id.action_buttons_layout);
+        if (actionButtonsLayout != null) {
+            actionButtonsLayout.setVisibility(actionButtonsVisibility);
+            Log.d(TAG, "Action buttons layout visibility set to: " + 
+                (actionButtonsVisibility == View.VISIBLE ? "VISIBLE" : "GONE") + 
+                " for position " + position + " (isLast: " + isLastItem + ")");
+        }
+        
+        if (holder.cancelButton != null) {
+            holder.cancelButton.setVisibility(actionButtonsVisibility);
+            if (shouldShowButtons) {
+                holder.cancelButton.setOnClickListener(v -> {
+                    if (listener != null) {
+                        listener.onCancelOrder();
+                        Log.d(TAG, "Cancel order clicked");
+                    }
+                });
+            }
+        }
+
+        if (holder.confirmButton != null) {
+            holder.confirmButton.setVisibility(actionButtonsVisibility);
+            if (shouldShowButtons) {
+                holder.confirmButton.setOnClickListener(v -> {
+                    if (listener != null) {
+                        listener.onConfirmOrder(currentOrderItems);
+                        Log.d(TAG, "Confirm order clicked with " + currentOrderItems.size() + " items");
+                    }
+                });
+            }
         }
     }
     
@@ -101,38 +140,45 @@ public class CurrentOrderAdapter extends RecyclerView.Adapter<CurrentOrderAdapte
         return currentOrderItems != null ? currentOrderItems.size() : 0;
     }
     
-    // ✅ Method to control button visibility
     public void setShowActionButtons(boolean show) {
+        Log.d(TAG, "setShowActionButtons called with: " + show);
         this.showActionButtons = show;
         notifyDataSetChanged();
+        Log.d(TAG, "Action buttons visibility set to: " + show + ", notifyDataSetChanged() called");
     }
     
     public static class CurrentOrderViewHolder extends RecyclerView.ViewHolder {
-        ImageView itemImage;
-        TextView itemName;
-        TextView itemPrice;
-        TextView itemQuantity;
-        TextView totalPrice;
-        ImageButton btnPlus;
-        ImageButton btnMinus;
-        LinearLayout actionButtonsContainer; // ✅ New
-        Button btnCancelOrder; // ✅ New
-        Button btnConfirmOrder; // ✅ New
-        
+        ImageView drinkImage;
+        TextView drinkName, drinkPrice, quantityText;
+        ImageButton plusButton, minusButton;
+        Button cancelButton, confirmButton;
+
         public CurrentOrderViewHolder(@NonNull View itemView) {
             super(itemView);
-            itemImage = itemView.findViewById(R.id.item_image);
-            itemName = itemView.findViewById(R.id.item_name);
-            itemPrice = itemView.findViewById(R.id.item_price);
-            itemQuantity = itemView.findViewById(R.id.item_quantity);
-            totalPrice = itemView.findViewById(R.id.total_price);
-            btnPlus = itemView.findViewById(R.id.btn_plus);
-            btnMinus = itemView.findViewById(R.id.btn_minus);
             
-            // ✅ New action buttons
-            actionButtonsContainer = itemView.findViewById(R.id.action_buttons_container);
-            btnCancelOrder = itemView.findViewById(R.id.btn_cancel_order);
-            btnConfirmOrder = itemView.findViewById(R.id.btn_confirm_order);
+            // ✅ FIXED: Sử dụng đúng ID từ layout XML
+            drinkImage = itemView.findViewById(R.id.drink_image);
+            drinkName = itemView.findViewById(R.id.drink_name);
+            drinkPrice = itemView.findViewById(R.id.drink_price);
+            quantityText = itemView.findViewById(R.id.quantity_text);
+            
+            plusButton = itemView.findViewById(R.id.btn_plus);
+            minusButton = itemView.findViewById(R.id.btn_minus);
+            
+            // ✅ FIXED: Sử dụng đúng ID cho action buttons
+            cancelButton = itemView.findViewById(R.id.btn_cancel_order);
+            confirmButton = itemView.findViewById(R.id.btn_confirm_order);
+            
+            // ✅ Debug logging để kiểm tra view nào bị null
+            Log.d(TAG, "ViewHolder initialized - " +
+                "drinkImage: " + (drinkImage != null) +
+                ", drinkName: " + (drinkName != null) +
+                ", drinkPrice: " + (drinkPrice != null) +
+                ", quantityText: " + (quantityText != null) +
+                ", plusButton: " + (plusButton != null) +
+                ", minusButton: " + (minusButton != null) +
+                ", cancelButton: " + (cancelButton != null) +
+                ", confirmButton: " + (confirmButton != null));
         }
     }
 }

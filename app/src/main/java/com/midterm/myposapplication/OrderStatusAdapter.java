@@ -1,6 +1,7 @@
 package com.midterm.myposapplication;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,7 +39,15 @@ public class OrderStatusAdapter extends RecyclerView.Adapter<OrderStatusAdapter.
     @Override
     public void onBindViewHolder(@NonNull OrderStatusViewHolder holder, int position) {
         Order order = orderList.get(position);
-        holder.bind(order, listener);
+        holder.bind(order);
+
+        // ✅ FIXED: Open OrderDetailActivity on click
+        holder.itemView.setOnClickListener(v -> {
+            Context context = holder.itemView.getContext();
+            Intent intent = new Intent(context, OrderDetailActivity.class);
+            intent.putExtra(OrderDetailActivity.EXTRA_ORDER_ID, order.getOrderNumber());
+            context.startActivity(intent);
+        });
     }
 
     @Override
@@ -62,7 +71,7 @@ public class OrderStatusAdapter extends RecyclerView.Adapter<OrderStatusAdapter.
             itemCount = itemView.findViewById(R.id.order_count);
         }
 
-        public void bind(final Order order, final OnOrderClickListener listener) {
+        public void bind(final Order order) {
             orderNumber.setText(order.getOrderNumber());
             tableName.setText(order.getTableName());
             itemCount.setText(order.getItems().size() + " món");
@@ -70,8 +79,6 @@ public class OrderStatusAdapter extends RecyclerView.Adapter<OrderStatusAdapter.
             // Set status badge
             statusBadge.setText(order.getOrderStatus().getDisplayName());
             statusBadge.setBackground(getStatusBackground(order.getOrderStatus()));
-
-            itemView.setOnClickListener(v -> listener.onOrderClick(order));
         }
         
         private Drawable getStatusBackground(Order.OrderStatus status) {

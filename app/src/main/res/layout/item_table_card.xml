@@ -1,81 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="140dp"
+    android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="6dp"
-    app:cardBackgroundColor="#FFFFFF">
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp">
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <!-- Status Indicator Circle -->
+        <!-- ✅ ID: status_indicator -->
         <View
             android:id="@+id/status_indicator"
             android:layout_width="12dp"
             android:layout_height="12dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentTop="true"
-            android:background="@drawable/circle_indicator"
-            android:backgroundTint="#4CAF50" />
+            android:background="@drawable/status_available_background"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Table Icon -->
-        <ImageView
-            android:id="@+id/table_icon"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="8dp"
-            android:src="@drawable/ic_table"
-            android:tint="#8D6E63" />
-
-        <!-- Table Number -->
+        <!-- ✅ ID: table_name -->
         <TextView
-            android:id="@+id/table_number"
+            android:id="@+id/table_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:textColor="@color/text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/table_icon"
+            app:layout_constraintStart_toEndOf="@id/status_indicator"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Bàn 1" />
+
+        <!-- ✅ ID: table_capacity -->
+        <TextView
+            android:id="@+id/table_capacity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/table_icon"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="8dp"
-            android:text="01"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="#2C2C2C" />
+            android:layout_marginTop="4dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="@id/table_name"
+            app:layout_constraintTop_toBottomOf="@id/table_name"
+            tools:text="4 chỗ ngồi" />
 
-        <!-- Table Status -->
+        <!-- ✅ ID: table_status -->
         <TextView
             android:id="@+id/table_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/table_number"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="4dp"
-            android:text="Trống"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/status_available_background"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp"
+            android:textColor="@color/white"
             android:textSize="12sp"
-            android:textColor="#666666"
-            android:background="@drawable/status_background"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="2dp" />
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@id/table_name"
+            app:layout_constraintTop_toBottomOf="@id/table_capacity"
+            tools:text="Trống" />
 
-        <!-- Order Count Badge -->
+        <!-- ✅ ID: order_count -->
         <TextView
             android:id="@+id/order_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:text="3"
-            android:textSize="10sp"
-            android:textColor="#FFFFFF"
-            android:background="@drawable/badge_background"
-            android:paddingHorizontal="6dp"
-            android:paddingVertical="2dp"
-            android:visibility="gone" />
+            android:layout_marginStart="8dp"
+            android:textColor="@color/primary_brown"
+            android:textSize="12sp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/table_status"
+            app:layout_constraintStart_toEndOf="@id/table_status"
+            app:layout_constraintTop_toTopOf="@id/table_status"
+            tools:text="1 order"
+            tools:visibility="visible" />
 
-    </RelativeLayout>
+        <!-- ✅ ID: table_icon -->
+        <ImageView
+            android:id="@+id/table_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_table"
+            app:layout_constraintBottom_toBottomOf="@id/table_status"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/table_name"
+            app:tint="@color/text_hint" />
 
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>
